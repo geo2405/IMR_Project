@@ -17,7 +17,8 @@ Video decor: https://youtu.be/J5JMj5fXyJI
 
 Saptamana 7:
 am trecut spre un decor real, am importat scanarea holului si a trei laboratoare in unity, am modelat cateva obiecte de care vom avea nevoie pentru a realiza scena completa, am inceput sa lucram pe partea de LLM
-Video lab 7:
+Video lab 7: https://youtu.be/qHYOPWbqUEg
 
 Device: 1WMHHA70F03314
+
 
