@@ -21,4 +21,14 @@ Video lab 7: https://youtu.be/qHYOPWbqUEg
 
 Device: 1WMHHA70F03314
 
+Saptamana 10:
+Avatar Creation Workflow
+În această săptămână a fost realizat procesul de creare a avatarurilor digitale pentru proiect. Modelarea se face printr-un selfie, iar generarea avatarului complet este realizată automat cu ajutorul platformei Avaturn. Sistemul procesează fotografia, reconstruiește fața în 3D și generează un model complet riggat, pregătit pentru integrarea în Unity.
+
+Speech-to-Text Research
+În paralel, am început documentarea soluțiilor de speech-to-text pentru a permite interacțiuni vocale cu avatarurile. Analizăm mai multe opțiuni (locale și cloud), evaluând acuratețea, latența, compatibilitatea cu Unity și posibilitățile de integrare în fluxul de dialog AI.
+
+links:
+https://youtube.com/shorts/I1jImqBZ-p0?feature=share
+https://youtube.com/shorts/gjijORfgksY?feature=share
 
