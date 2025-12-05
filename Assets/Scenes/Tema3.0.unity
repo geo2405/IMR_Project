@@ -925,9 +925,6 @@ PrefabInstance:
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 1717954561962503725, guid: f6336ac4ac8b4d34bc5072418cdc62a0, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 1438702747}
-    - targetCorrespondingSourceObject: {fileID: 1717954561962503725, guid: f6336ac4ac8b4d34bc5072418cdc62a0, type: 3}
-      insertIndex: -1
       addedObject: {fileID: 1438702754}
   m_SourcePrefab: {fileID: 100100000, guid: f6336ac4ac8b4d34bc5072418cdc62a0, type: 3}
 --- !u!4 &533186715 stripped
@@ -1219,6 +1216,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 60bb8a1d6a8548d45aca2024af6880ec, type: 3}
       insertIndex: -1
       addedObject: {fileID: 983801077}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 60bb8a1d6a8548d45aca2024af6880ec, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 983801079}
   m_SourcePrefab: {fileID: 100100000, guid: 60bb8a1d6a8548d45aca2024af6880ec, type: 3}
 --- !u!1 &785843545
 GameObject:
@@ -1858,8 +1858,8 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 270742456}
-        m_TargetAssemblyTypeName: ProfessorChat, Assembly-CSharp
+      - m_Target: {fileID: 983801079}
+        m_TargetAssemblyTypeName: DiscutieEric, Assembly-CSharp
         m_MethodName: SendQuestion
         m_Mode: 1
         m_Arguments:
@@ -3198,16 +3198,33 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 983801076}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 44b5de3a41b404840bb7a5a3a8a4bb5b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   inputField: {fileID: 214373597}
   outputText: {fileID: 1643919618}
-  serverIP: 192.168.0.105
+  serverIP: 127.0.0.1
   port: 1234
-  model: openai/gpt-oss-20b
+  model: local-model
+--- !u!114 &983801079
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 983801076}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 479ec51f1893ead4da3a7d03d65ebf7e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  inputField: {fileID: 214373597}
+  outputText: {fileID: 1643919618}
+  serverIP: 127.0.0.1
+  port: 1234
+  model: local-model
 --- !u!1 &1079841573
 GameObject:
   m_ObjectHideFlags: 0
@@ -3455,18 +3472,6 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 1717954561962503725, guid: f6336ac4ac8b4d34bc5072418cdc62a0, type: 3}
   m_PrefabInstance: {fileID: 533186714}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &1438702747
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1438702746}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 64774db3b3b0ec64c91f3cd7decbe923, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &1438702754
 MonoBehaviour:
   m_ObjectHideFlags: 0

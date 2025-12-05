@@ -1,10 +1,10 @@
-using System.Collections;
+﻿using System.Collections;
 using UnityEngine;
 using UnityEngine.Networking;
 using TMPro;
 using System.Text.RegularExpressions;
 
-public class ProfessorChat : MonoBehaviour
+public class DiscutieEric : MonoBehaviour
 {
     [Header("UI References")]
     public TMP_InputField inputField;

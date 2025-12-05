@@ -9,7 +9,7 @@ using UnityEngine.UI;
 public class GoogleVoice : MonoBehaviour
 {
     [Header("Setari Google Cloud")]
-    public string apiKey = "AIzaSyA0fAlr_N-eGGzkatnAoPpx05XOuhI7AU0";
+    public string apiKey = "CHEIA E IN INSPECTOR ACUM";
     public string languageCode = "ro-RO";
 
     [Header("Setari Control")]
