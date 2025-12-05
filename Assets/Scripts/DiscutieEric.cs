@@ -29,7 +29,7 @@ public class DiscutieEric : MonoBehaviour
         if (!string.IsNullOrEmpty(question))
         {
             // Optional: Afisam intrebarea ta in chat
-            // outputText.text += $"\n🧑‍🎓 {question}\n";
+            outputText.text += $"\nTu: {question}\n";
 
             StartCoroutine(SendToLLM(question));
             inputField.text = "";
@@ -51,38 +51,42 @@ public class DiscutieEric : MonoBehaviour
         string baseUrl = $"http://{serverIP}:{port}";
         bool success = false;
 
+        // MARIM TIMPUL DE ASTEPTARE (Critic pentru 500 tokens!)
+        int timeOutSecunde = 180;
+
         foreach (string endpoint in endpoints)
         {
-            if (success) break; // Daca a mers deja, nu mai incercam alt endpoint
+            if (success) break;
 
             string apiUrl = baseUrl + endpoint;
             string jsonBody;
 
-            // Construim JSON-ul in functie de endpoint
+            // Curatam intrebarea ta de caractere care strica JSON-ul
+            string cleanQuestion = question.Replace("\"", "'").Replace("\\", "");
+
             if (endpoint.Contains("responses"))
             {
                 // Format vechi LM Studio
                 jsonBody = JsonUtility.ToJson(new InputRequest
                 {
                     model = model,
-                    input = $"Ești un profesor prietenos. Răspunde scurt (max 2 fraze). Întrebare: {question}",
-                    max_tokens = 150
+                    input = $"Esti un profesor. Raspunde in romana, clar si simplu. Fara formule, fara simboluri ciudate. Intrebare: {cleanQuestion}",
+                    max_tokens = 500
                 });
             }
             else
             {
-                // Format standard OpenAI / LM Studio (Chat Completions)
-                // Escapam ghilimelele din intrebare ca sa nu strice JSON-ul
-                string cleanQuestion = question.Replace("\"", "'");
-
+                // Format Chat Completions (Cel mai bun pentru Llama 3)
                 jsonBody = "{";
                 jsonBody += $"\"model\": \"{model}\",";
                 jsonBody += "\"messages\": [";
-                jsonBody += "{\"role\": \"system\", \"content\": \"Ești un profesor universitar prietenos. Răspunde scurt, concis, în limba română (maximum 30 de cuvinte).\"},";
+                // AICI E SECRETUL: Ii interzicem sa foloseasca backslash sau latex
+                jsonBody += "{\"role\": \"system\", \"content\": \"Ești un profesor universitar prietenos. Răspunde în limba română. Răspunsul tău trebuie să fie DOAR TEXT SIMPLU. Nu folosi markdown, nu folosi LaTeX, nu folosi backslash (\\\\). Fii concis.\"},";
                 jsonBody += $"{{\"role\": \"user\", \"content\": \"{cleanQuestion}\"}}";
                 jsonBody += "],";
-                jsonBody += "\"temperature\": 0.7,";
-                jsonBody += "\"max_tokens\": 150";
+                jsonBody += "\"temperature\": 0.5,"; // Mai putin creativ = mai putine erori
+                jsonBody += "\"max_tokens\": 500,";
+                jsonBody += "\"stream\": false"; // Asiguram ca nu e stream
                 jsonBody += "}";
             }
 
@@ -92,9 +96,9 @@ public class DiscutieEric : MonoBehaviour
                 www.uploadHandler = new UploadHandlerRaw(bodyRaw);
                 www.downloadHandler = new DownloadHandlerBuffer();
                 www.SetRequestHeader("Content-Type", "application/json");
-                www.timeout = Mathf.RoundToInt(requestTimeout);
+                www.timeout = timeOutSecunde; // Setam timeout-ul marit
 
-                Debug.Log($"📡 Trimit către {apiUrl}...");
+                Debug.Log($"📡 Trimit către {apiUrl} (Asteapta {timeOutSecunde}s)...");
                 yield return www.SendWebRequest();
 
                 if (www.result == UnityWebRequest.Result.Success)
@@ -104,22 +108,23 @@ public class DiscutieEric : MonoBehaviour
 
                     string answer = ExtractOutputText(json);
 
-                    // Curatam raspunsul de eventuale caractere ciudate
-                    answer = answer.Replace("\\n", "\n").Trim();
+                    // Curatenie finala: Scoatem orice backslash a mai scapat
+                    answer = answer.Replace("\\", "").Trim();
 
-                    outputText.text = answer; // Inlocuim textul vechi cu raspunsul nou
+                    // Adaugam raspunsul in chat
+                    outputText.text += $"\n👨‍🏫 ERIC: {answer}\n----------------\n";
                     success = true;
                 }
                 else
                 {
-                    Debug.LogWarning($"⚠️ Acel endpoint nu a mers: {www.error}. Incerc urmatorul...");
+                    Debug.LogWarning($"⚠️ Eroare: {www.error}. Detalii: {www.downloadHandler.text}");
                 }
             }
         }
 
         if (!success)
         {
-            outputText.text = "❌ Eroare: Nu am putut contacta serverul AI. Verifica daca LM Studio e pornit pe portul 1234.";
+            outputText.text += "\n❌ Eroare: Serverul nu a răspuns la timp sau este oprit.\n";
         }
     }
 
