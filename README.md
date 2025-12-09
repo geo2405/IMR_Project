@@ -32,3 +32,27 @@ links:
 https://youtube.com/shorts/I1jImqBZ-p0?feature=share
 https://youtube.com/shorts/gjijORfgksY?feature=share
 
+Saptamana 11:
+Acest update include finalizarea geometriei nivelului, implementarea sistemului de recunoaștere vocală (Speech-to-Text) și integrarea completă a unui LLM local pentru interacțiunea cu avatarul profesorului.
+
+Modificări Principale
+1. Environment & Geometrie
+Optimizare Collidere: Au fost remediate problemele de coliziune pentru Hol și sălile de laborator (Amazon, Bitdefender, Gemini).
+Procesare Mesh-uri: Ușile au fost decupate și procesate manual în Blender pentru a elimina barierele invizibile, permițând acum navigarea fluidă (intrare/ieșire) în toate sălile.
+
+2. Sistem Voice-to-Text (Google API)
+A fost implementat un sistem de recunoaștere vocală bazat pe Google Cloud Speech-to-Text.
+Funcționalitate: Push-to-talk (ținând apăsată tasta SPACE).
+
+Suport: Recunoaște limba română și transcrie automat textul în interfața de chat a avatarului.
+Notă: Sistemul utilizează Free Tier-ul Google API (limitat la 60 min/lună).
+
+ 
+3. Integrare AI Local (Avatar Profesor)
+Script Refactoring: Scriptul de chat (DiscutieEric) a fost refăcut pentru portabilitate.
+Conectivitate: S-a eliminat IP-ul hardcodat, trecând la utilizarea localhost (127.0.0.1). Acest lucru permite rularea proiectului pe orice mașină care are serverul AI pornit local, eliminând problemele de rețea.
+
+
+link:
+https://youtu.be/1upZ1ne0bUQ
+
