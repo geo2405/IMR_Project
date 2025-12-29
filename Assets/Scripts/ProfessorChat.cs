@@ -2,7 +2,6 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.Networking;
 using TMPro;
-using System.Text.RegularExpressions;
 
 public class ProfessorChat : MonoBehaviour
 {
@@ -10,153 +9,172 @@ public class ProfessorChat : MonoBehaviour
     public TMP_InputField inputField;
     public TMP_Text outputText;
 
-    [Header("Server Settings")]
-    // AM MODIFICAT AICI: 127.0.0.1 inseamna "Acest Calculator". 
-    // Merge la oricine ruleaza LM Studio local.
+    [Header("LM Studio Settings")]
     public string serverIP = "127.0.0.1";
     public int port = 1234;
-
-    // AM MODIFICAT AICI: "local-model" este universal pentru LM Studio
     public string model = "local-model";
 
-    private float requestTimeout = 60f; // Am marit putin timpul (unele laptopuri sunt mai lente)
+    private float requestTimeout = 60f;
+    private string endpoint = "/v1/chat/completions";
 
-    private string[] endpoints = { "/v1/chat/completions", "/v1/responses" }; // Am inversat ordinea (chat e mai comun)
+    private ConversationLog conversationLog = new ConversationLog();
+
+    // =========================
+    // UI ENTRY POINTS
+    // =========================
 
     public void SendQuestion()
     {
         string question = inputField.text.Trim();
-        if (!string.IsNullOrEmpty(question))
-        {
-            // Optional: Afisam intrebarea ta in chat
-            // outputText.text += $"\n🧑‍🎓 {question}\n";
+        if (string.IsNullOrEmpty(question)) return;
+        conversationLog.studentMessages.Add(question);
+        inputField.text = "";
+        StartCoroutine(SendToLLM(question));
 
-            StartCoroutine(SendToLLM(question));
-            inputField.text = "";
-        }
+        Debug.Log($"[CHAT] {gameObject.name} - mesaj adăugat");
     }
 
-    // Am adaugat o functie publica ca sa o poti apela si din alte scripturi (ex: GoogleVoice)
     public void IntrebareDeLaVoce(string text)
     {
-        if (!string.IsNullOrEmpty(text))
-        {
-            inputField.text = text; // O punem in casuta vizual
-            SendQuestion(); // O trimitem
-        }
+        if (string.IsNullOrEmpty(text)) return;
+        inputField.text = text;
+        SendQuestion();
     }
+
+    // =========================
+    // LLM REQUEST
+    // =========================
 
     IEnumerator SendToLLM(string question)
     {
-        string baseUrl = $"http://{serverIP}:{port}";
-        bool success = false;
+        string apiUrl = $"http://{serverIP}:{port}{endpoint}";
 
-        foreach (string endpoint in endpoints)
+        // 1️⃣ Luăm profesorul activ
+        ProfessorProfile prof = null;
+        if (ProfessorManager.Instance != null)
+            prof = ProfessorManager.Instance.activeProfessor;
+
+        string systemPrompt =
+            prof != null
+            ? prof.systemPrompt
+            : "Ești un profesor universitar prietenos.";
+
+        // DEBUG CRITIC
+        Debug.Log("===== SYSTEM PROMPT TRIMIS =====");
+        Debug.Log(systemPrompt);
+
+        // 2️⃣ Curățăm input-ul userului
+        string cleanQuestion = question.Replace("\\", "").Replace("\"", "'");
+
+        // 3️⃣ Construim requestul CORECT (fără JSON manual)
+        ChatRequest requestData = new ChatRequest
         {
-            if (success) break; // Daca a mers deja, nu mai incercam alt endpoint
-
-            string apiUrl = baseUrl + endpoint;
-            string jsonBody;
-
-            // Construim JSON-ul in functie de endpoint
-            if (endpoint.Contains("responses"))
+            model = model,
+            messages = new ChatMessage[]
             {
-                // Format vechi LM Studio
-                jsonBody = JsonUtility.ToJson(new InputRequest
+                new ChatMessage
                 {
-                    model = model,
-                    input = $"Ești un profesor prietenos. Răspunde scurt (max 2 fraze). Întrebare: {question}",
-                    max_tokens = 150
-                });
+                    role = "system",
+                    content = systemPrompt
+                },
+                new ChatMessage
+                {
+                    role = "user",
+                    content = cleanQuestion
+                }
+            },
+            temperature = 0.2f,
+            max_tokens = 150,
+            stream = false
+        };
+
+        string jsonBody = JsonUtility.ToJson(requestData);
+
+        using (UnityWebRequest www = new UnityWebRequest(apiUrl, "POST"))
+        {
+            byte[] bodyRaw = System.Text.Encoding.UTF8.GetBytes(jsonBody);
+            www.uploadHandler = new UploadHandlerRaw(bodyRaw);
+            www.downloadHandler = new DownloadHandlerBuffer();
+            www.SetRequestHeader("Content-Type", "application/json");
+            www.timeout = Mathf.RoundToInt(requestTimeout);
+
+            Debug.Log($"📡 Trimit către {apiUrl}");
+            yield return www.SendWebRequest();
+
+            if (www.result == UnityWebRequest.Result.Success)
+            {
+                string json = www.downloadHandler.text;
+                Debug.Log("✅ Răspuns LLM:\n" + json);
+
+                string answer = ExtractOutputText(json);
+                conversationLog.professorMessages.Add(answer);
+                outputText.text = answer;
             }
             else
             {
-                // Format standard OpenAI / LM Studio (Chat Completions)
-                // Escapam ghilimelele din intrebare ca sa nu strice JSON-ul
-                string cleanQuestion = question.Replace("\"", "'");
-
-                jsonBody = "{";
-                jsonBody += $"\"model\": \"{model}\",";
-                jsonBody += "\"messages\": [";
-                jsonBody += "{\"role\": \"system\", \"content\": \"Ești un profesor universitar prietenos. Răspunde scurt, concis, în limba română (maximum 30 de cuvinte).\"},";
-                jsonBody += $"{{\"role\": \"user\", \"content\": \"{cleanQuestion}\"}}";
-                jsonBody += "],";
-                jsonBody += "\"temperature\": 0.7,";
-                jsonBody += "\"max_tokens\": 150";
-                jsonBody += "}";
-            }
-
-            using (UnityWebRequest www = new UnityWebRequest(apiUrl, "POST"))
-            {
-                byte[] bodyRaw = System.Text.Encoding.UTF8.GetBytes(jsonBody);
-                www.uploadHandler = new UploadHandlerRaw(bodyRaw);
-                www.downloadHandler = new DownloadHandlerBuffer();
-                www.SetRequestHeader("Content-Type", "application/json");
-                www.timeout = Mathf.RoundToInt(requestTimeout);
-
-                Debug.Log($"📡 Trimit către {apiUrl}...");
-                yield return www.SendWebRequest();
-
-                if (www.result == UnityWebRequest.Result.Success)
-                {
-                    string json = www.downloadHandler.text;
-                    Debug.Log($"✅ Răspuns primit:\n{json}");
-
-                    string answer = ExtractOutputText(json);
-
-                    // Curatam raspunsul de eventuale caractere ciudate
-                    answer = answer.Replace("\\n", "\n").Trim();
-
-                    outputText.text = answer; // Inlocuim textul vechi cu raspunsul nou
-                    success = true;
-                }
-                else
-                {
-                    Debug.LogWarning($"⚠️ Acel endpoint nu a mers: {www.error}. Incerc urmatorul...");
-                }
+                Debug.LogError("❌ Eroare LLM: " + www.error);
+                outputText.text = "Eroare: nu am putut contacta profesorul.";
             }
         }
 
-        if (!success)
-        {
-            outputText.text = "❌ Eroare: Nu am putut contacta serverul AI. Verifica daca LM Studio e pornit pe portul 1234.";
-        }
+
+        
     }
 
-    // Functie de extragere a textului (Parsare manuala ca sa nu depindem de clase complexe)
+    // =========================
+    // RESPONSE PARSING
+    // =========================
+
     string ExtractOutputText(string json)
     {
-        // 1. Incercam formatul Chat Completions (choices -> message -> content)
-        string cautaContent = "\"content\": \"";
-        int start = json.LastIndexOf(cautaContent); // Cautam ultimul "content" (de obicei e cel al asistentului)
+        string key = "\"content\": \"";
+        int start = json.LastIndexOf(key);
+        if (start == -1) return "Eroare la citirea răspunsului.";
 
-        if (start != -1)
-        {
-            start += cautaContent.Length;
-            int end = json.IndexOf("\"", start);
+        start += key.Length;
+        int end = json.IndexOf("\"", start);
+        if (end == -1) return "Eroare la citirea răspunsului.";
 
-            // Verificam sa nu fie un "content" fals
-            if (end != -1) return json.Substring(start, end - start);
-        }
-
-        // 2. Fallback pentru formatul vechi "text"
-        // ... (implementare simplificata)
-
-        return "Nu am putut citi raspunsul, dar serverul a raspuns.";
-    }
-
-    [System.Serializable]
-    public class InputRequest
-    {
-        public string model;
-        public string input;
-        public int max_tokens;
+        return json.Substring(start, end - start)
+                   .Replace("\\n", "\n")
+                   .Trim();
     }
 
     void Update()
     {
-        // Trimite la Enter
         if (Input.GetKeyDown(KeyCode.Return))
             SendQuestion();
     }
+
+    // =========================
+    // JSON STRUCTS (FOARTE IMPORTANT)
+    // =========================
+
+    [System.Serializable]
+    public class ChatRequest
+    {
+        public string model;
+        public ChatMessage[] messages;
+        public float temperature;
+        public int max_tokens;
+        public bool stream;
+    }
+
+    [System.Serializable]
+    public class ChatMessage
+    {
+        public string role;
+        public string content;
+    }
+
+    public ConversationLog GetConversationLog()
+{
+    return conversationLog;
+}
+
+public void ResetConversation()
+{
+    conversationLog.Clear();
+}
+
 }
