@@ -57,3 +57,7 @@ A fost implementat un sistem de recunoaștere vocală bazat pe Google Cloud Spee
 * *Conectivitate:* S-a eliminat IP-ul hardcodat, trecând la utilizarea localhost (127.0.0.1). Acest lucru permite rularea proiectului pe orice mașină care are serverul AI pornit local, eliminând problemele de rețea.
 
 * *Video Demo:* [YouTube Link](https://youtu.be/1upZ1ne0bUQ)
+
+### Săptămâna 12
+
+S-a lucrat la implementarea unor profiluri de profesori si evaluarea scorului in functie de compatibilitate. Nu s-a implementat scorul in functie de cuvinte cheie ci este mai degraba o combinatie liniara dintre o evaluare a unui llm din dinscutie si un punctaj bazat pe cuvinte si sintagme cheie (analizate intr-un context semantic).
