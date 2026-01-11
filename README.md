@@ -58,6 +58,8 @@ A fost implementat un sistem de recunoaștere vocală bazat pe Google Cloud Spee
 
 * *Video Demo:* [YouTube Link](https://youtu.be/1upZ1ne0bUQ)
 
-### Săptămâna 12
+### Săptămâna 12 + 13 + 14
 
 S-a lucrat la implementarea unor profiluri de profesori si evaluarea scorului in functie de compatibilitate. Nu s-a implementat scorul in functie de cuvinte cheie ci este mai degraba o combinatie liniara dintre o evaluare a unui llm din dinscutie si un punctaj bazat pe cuvinte si sintagme cheie (analizate intr-un context semantic).
+
+* *Video Demo:* [YouTube Link](https://youtu.be/UOEnAiFH70A)
