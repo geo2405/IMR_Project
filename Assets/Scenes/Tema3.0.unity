@@ -5858,7 +5858,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8d40708b0150e8148be6a5fc7a7a79a9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  apiKey: AIzaSyA0fAlr_N-eGGzkatnAoPpx05XOuhI7AU0
+  apiKey: AIzaSyDt3bQzvug2hH5lInL7WXQwfCT4mmwFwCg
   languageCode: ro-RO
   tastaActivare: 32
   casutaTextAvatar: {fileID: 214373597}
