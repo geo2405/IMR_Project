@@ -74,7 +74,6 @@ S-a lucrat la implementarea unor profiluri de profesori si evaluarea scorului in
 
 * *Audio și Input Vocal*: Am rescris logica de conectare a modulului Google Voice pentru a permite comutarea dinamică între profesori. Am soluționat conflictul de input, asigurând trimiterea textului vocal strict către profesorul aflat în fața utilizatorului.
 
-* *Versionare**: Securizat întregul progres prin salvarea și sincronizarea modificărilor pe GitHub, rezolvând conflictele de formatare a fișierelor.
 * *Video Demo:* [YouTube Link](https://www.youtube.com/watch?v=_5vQgW2p5sk)
 
 
