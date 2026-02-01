@@ -3,11 +3,28 @@ using UnityEngine.Networking;
 using System;
 using System.Collections;
 using System.Text;
-using TMPro; 
+using TMPro;
 using UnityEngine.UI;
 
 public class GoogleVoice : MonoBehaviour
 {
+    // ==========================================
+    // 1. SINGLETON & CONEXIUNE PROFESOR (NOU)
+    // ==========================================
+    public static GoogleVoice Instance; // Ca sa te gaseasca ProximityChat
+
+    [Header("Conexiune Automata")]
+    public ProfessorChat activeProfessor; // Aici se pune singur proful cand te apropii
+
+    private void Awake()
+    {
+        if (Instance == null) Instance = this;
+        else Destroy(gameObject);
+    }
+
+    // ==========================================
+    // 2. SETARILE TALE GOOGLE (ORIGINALE)
+    // ==========================================
     [Header("Setari Google Cloud")]
     public string apiKey = "AIzaSyA0fAlr_N-eGGzkatnAoPpx05XOuhI7AU0";
     public string languageCode = "ro-RO";
@@ -15,9 +32,8 @@ public class GoogleVoice : MonoBehaviour
     [Header("Setari Control")]
     public KeyCode tastaActivare = KeyCode.Space;
 
-    [Header("Legatura cu Avatarul")]
-    public TMP_InputField casutaTextAvatar; 
-    public Button butonTrimite;             
+    [Header("UI Feedback")]
+    public TMP_InputField casutaTextAvatar; // Doar ca sa vezi ce ai zis
 
     private AudioClip clipInregistrat;
     private string microfonAles;
@@ -28,12 +44,17 @@ public class GoogleVoice : MonoBehaviour
         if (Microphone.devices.Length > 0)
         {
             microfonAles = Microphone.devices[0];
-            Debug.Log("Microfon detectat: " + microfonAles);
+            Debug.Log("🎤 Microfon detectat: " + microfonAles);
+        }
+        else
+        {
+            Debug.LogError("⚠️ Niciun microfon gasit!");
         }
     }
 
     void Update()
     {
+        // Tinem apasat SPACE ca sa vorbim
         if (Input.GetKeyDown(tastaActivare) && !inregistreaza)
         {
             PornesteInregistrarea();
@@ -52,7 +73,6 @@ public class GoogleVoice : MonoBehaviour
         clipInregistrat = Microphone.Start(microfonAles, false, 10, 44100);
 
         if (casutaTextAvatar != null) casutaTextAvatar.text = "🔴 Te ascult...";
-
         Debug.Log("🔴 ASCULT...");
     }
 
@@ -97,8 +117,8 @@ public class GoogleVoice : MonoBehaviour
 
             if (request.result != UnityWebRequest.Result.Success)
             {
-                Debug.LogError("❌ EROARE: " + request.downloadHandler.text);
-                if (casutaTextAvatar != null) casutaTextAvatar.text = "Eroare Google.";
+                Debug.LogError("❌ EROARE GOOGLE: " + request.downloadHandler.text);
+                if (casutaTextAvatar != null) casutaTextAvatar.text = "Eroare Google API.";
             }
             else
             {
@@ -107,19 +127,30 @@ public class GoogleVoice : MonoBehaviour
 
                 Debug.Log("🟢 GOOGLE A ZIS: " + textFinal);
 
-                if (casutaTextAvatar != null)
-                {
-                    casutaTextAvatar.text = textFinal;
+                // Afisam textul ca sa vezi ca te-a auzit
+                if (casutaTextAvatar != null) casutaTextAvatar.text = textFinal;
 
-                    if (butonTrimite != null && textFinal.Length > 1)
+                // ==========================================
+                // 3. SCHIMBAREA CRITICA (LEGATURA CU PROFUL)
+                // ==========================================
+                if (!string.IsNullOrEmpty(textFinal))
+                {
+                    if (activeProfessor != null)
                     {
-                        Debug.Log("🤖 Apas butonul de trimitere automat...");
-                        butonTrimite.onClick.Invoke();
+                        // Trimitem direct la proful activ (Web, AI sau Securitate)
+                        activeProfessor.IntrebareDeLaVoce(textFinal);
+                    }
+                    else
+                    {
+                        Debug.LogWarning("⚠️ Ai vorbit, dar nu esti langa niciun profesor!");
+                        if (casutaTextAvatar != null) casutaTextAvatar.text += " (Apropie-te de un prof!)";
                     }
                 }
             }
         }
     }
+
+    // --- Utilitare Audio ---
 
     byte[] ConvertToPCM16(AudioClip clip)
     {

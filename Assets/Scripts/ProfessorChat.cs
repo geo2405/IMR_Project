@@ -7,7 +7,7 @@ using System.Text.RegularExpressions;
 public class ProfessorChat : MonoBehaviour
 {
     [Header("Identitate Profesor")]
-    public string professorID = "Prof_Web";
+    public string professorID = "Prof_TW";
 
     [Header("UI References")]
     public TMP_InputField inputField;
