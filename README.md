@@ -58,8 +58,23 @@ A fost implementat un sistem de recunoaștere vocală bazat pe Google Cloud Spee
 
 * *Video Demo:* [YouTube Link](https://youtu.be/1upZ1ne0bUQ)
 
-### Săptămâna 12 + 13 + 14
+### Săptămâna 12 + 13
 
 S-a lucrat la implementarea unor profiluri de profesori si evaluarea scorului in functie de compatibilitate. Nu s-a implementat scorul in functie de cuvinte cheie ci este mai degraba o combinatie liniara dintre o evaluare a unui llm din dinscutie si un punctaj bazat pe cuvinte si sintagme cheie (analizate intr-un context semantic).
 
 * *Video Demo:* [YouTube Link](https://youtu.be/UOEnAiFH70A)
+
+### Săptămâna 14
+
+* *Sistemul Multi-Profesor*: Am extins arhitectura aplicației de la un singur profesor la 4 entități distincte (AI, Securitate, IMR, Web), clonând stațiile de lucru și configurând ID-uri și personalități unice pentru fiecare. Totodată, am implementat logica de colectare progresivă a semnăturilor și declanșarea automată a sistemului de confetti la finalizarea obiectivelor.
+
+* *Restaurare Mediu Vizual*: Am reparat iluminarea deficitară a scanării 3D prin eliminarea umbrelor duble, setarea luminii ambientale pe alb și schimbarea shaderelor pe Unlit/Texture. De asemenea, am corectat geometria "spartă" a pereților și podelei prin aplicarea de suprafețe false ("patch-uri") texturate și mascarea imperfecțiunilor cu efecte de Post-Processing (Bloom, Ceață, Anti-Aliasing).
+
+* *Interactivitate și UI*: Am refăcut sistemul de interfață pentru a fi reactiv la distanță (Proximity Chat), ascunzând elementele inutile când studentul este departe. Am fluidizat fluxul conversației pentru a preveni suprapunerile și clarificat feedback-ul vizual al stărilor de "Ascultare/Procesare".
+
+* *Audio și Input Vocal*: Am rescris logica de conectare a modulului Google Voice pentru a permite comutarea dinamică între profesori. Am soluționat conflictul de input, asigurând trimiterea textului vocal strict către profesorul aflat în fața utilizatorului.
+
+* *Versionare**: Securizat întregul progres prin salvarea și sincronizarea modificărilor pe GitHub, rezolvând conflictele de formatare a fișierelor.
+* *Video Demo:* [YouTube Link](https://www.youtube.com/watch?v=_5vQgW2p5sk)
+
+
