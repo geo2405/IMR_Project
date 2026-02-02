@@ -21,5 +21,6 @@ public class ProfessorManager : MonoBehaviour
 
         Debug.Log($"Profesor activ: {prof.professorName}");
         Debug.Log($"Chat activ: {chat.gameObject.name}");
+        AudioManager.EnsureExists().PlayConversationLoop();
     }
 }

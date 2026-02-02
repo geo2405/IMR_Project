@@ -16,6 +16,11 @@ public class ProfessorChat : MonoBehaviour
     [Header("Setări Estetice")]
     public float vitezaScriere = 0.04f;
 
+    [Header("Audio")]
+    public AudioClip sendSfx;
+    public AudioClip receiveSfx;
+    public AudioClip errorSfx;
+
     [Header("Conexiune LLM")]
     public string serverIP = "127.0.0.1";
     public int port = 1234;
@@ -37,6 +42,7 @@ public class ProfessorChat : MonoBehaviour
         Debug.Log("🎤 Voce: " + text);
         if (inputField != null) inputField.text = "Student: " + text;
 
+        PlaySfx(sendSfx);
         StartCoroutine(ProcessFlow(text));
     }
 
@@ -47,6 +53,7 @@ public class ProfessorChat : MonoBehaviour
         if (string.IsNullOrEmpty(text)) return;
 
         inputField.text = "Student: " + text;
+        PlaySfx(sendSfx);
         StartCoroutine(ProcessFlow(text));
     }
 
@@ -104,6 +111,7 @@ public class ProfessorChat : MonoBehaviour
         if (requestError || string.IsNullOrEmpty(finalJson))
         {
             if (outputText != null) outputText.text = "Eroare: LM Studio nu a răspuns sau s-a întrerupt conexiunea.";
+            PlaySfx(errorSfx, true);
         }
         else
         {
@@ -111,6 +119,7 @@ public class ProfessorChat : MonoBehaviour
 
             if (conversationLog.professorMessages != null) conversationLog.professorMessages.Add(answer);
 
+            PlaySfx(receiveSfx);
             StartCoroutine(TypewriterEffect(answer));
         }
     }
@@ -180,6 +189,8 @@ public class ProfessorChat : MonoBehaviour
 
         if (GameManager.Instance != null)
             GameManager.Instance.CollectSignature(professorID);
+
+        AudioManager.EnsureExists().ResumeAmbient();
     }
 
     // =========================
@@ -225,5 +236,14 @@ public class ProfessorChat : MonoBehaviour
     void Update()
     {
         if (Input.GetKeyDown(KeyCode.Return)) SendQuestion();
+    }
+
+    void PlaySfx(AudioClip clip, bool isError = false)
+    {
+        var audio = AudioManager.EnsureExists();
+        var fallback = isError ? audio.errorSfx : audio.defaultSfx;
+        var chosen = clip ?? fallback;
+        if (chosen == null) return;
+        audio.PlayOneShot(chosen);
     }
 }

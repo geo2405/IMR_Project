@@ -6,6 +6,8 @@ public class EndConversationButton : MonoBehaviour
     [Header("References")]
     public LLMCompatibilityEvaluator llmEvaluator;
     public TMP_Text resultText;
+    [Header("Audio")]
+    public AudioClip endSfx;
 
     [Header("Scoring")]
     [Range(0f, 1f)]
@@ -14,6 +16,7 @@ public class EndConversationButton : MonoBehaviour
     public void EndConversation()
     {
         Debug.Log("END CONVERSATION APASAT");
+        PlaySfx(endSfx);
 
         var manager = ProfessorManager.Instance;
 
@@ -68,8 +71,17 @@ public class EndConversationButton : MonoBehaviour
 
                     // 3️⃣ Reset conversație
                     log.Clear();
+                    AudioManager.EnsureExists().ResumeAmbient();
                 }
             )
         );
+    }
+
+    void PlaySfx(AudioClip clip)
+    {
+        var audio = AudioManager.EnsureExists();
+        var chosen = clip ?? audio.defaultSfx;
+        if (chosen == null) return;
+        audio.PlayOneShot(chosen);
     }
 }

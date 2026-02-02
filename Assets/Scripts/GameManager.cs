@@ -1,13 +1,22 @@
 ﻿using UnityEngine;
 using TMPro; // Pt Text
+using System.Collections.Generic;
 
 public class GameManager : MonoBehaviour
 {
     public static GameManager Instance; // Accesibil de oriunde
+    const string SignatureListKey = "Semnatura_List";
 
     [Header("UI Referinte")]
     public TMP_Text scoreText; // Trage ScoreText aici in Inspector
     public GameObject confettiEffect; // Optional: Trage particulele aici
+    [Header("Audio")]
+    public AudioClip signatureSfx;
+    [Header("VFX")]
+    public bool forceColorConfetti = true;
+    public bool forceConfettiBurst = true;
+    [Header("Debug")]
+    public bool wipePlayerPrefsOnStart = false;
 
     private int signatures = 0;
     private int maxSignatures = 3;
@@ -21,13 +30,41 @@ public class GameManager : MonoBehaviour
 
     void Start()
     {
-        // ASTA E BOMBA NUCLEARĂ CARE ȘTERGE TOT LA PORNIRE
-        PlayerPrefs.DeleteAll();
-        PlayerPrefs.Save();
+        if (scoreText == null)
+        {
+            var scoreGo = GameObject.Find("ScoreText");
+            if (scoreGo != null)
+                scoreText = scoreGo.GetComponent<TMP_Text>();
+            else
+            {
+                var texts = FindObjectsOfType<TMP_Text>(true);
+                foreach (var txt in texts)
+                {
+                    if (txt == null) continue;
+                    var name = txt.name.ToLowerInvariant();
+                    if (name.Contains("score") || txt.text.Contains("Semnături"))
+                    {
+                        scoreText = txt;
+                        break;
+                    }
+                }
+            }
+        }
 
-        signatures = 0; // Resetam si variabila locala
+        if (wipePlayerPrefsOnStart)
+        {
+            // Reset complet (doar pentru testare)
+            PlayerPrefs.DeleteAll();
+            PlayerPrefs.Save();
+            Debug.Log("🧹 MEMORIE ȘTEARSĂ! Semnături resetate la 0.");
+        }
+        else
+        {
+            ResetSignatureKeys();
+        }
+
+        signatures = 0;
         UpdateUI();
-        Debug.Log("🧹 MEMORIE ȘTEARSĂ! Semnături resetate la 0.");
     }
 
     // Functia pe care o apeleaza Profesorul cand termini discutia
@@ -41,17 +78,21 @@ public class GameManager : MonoBehaviour
         {
             // NU am vorbit inca, deci luam semnatura
             PlayerPrefs.SetInt(key, 1); // Salvam in memorie
+            RegisterSignatureKey(professorID);
             PlayerPrefs.Save();
 
             signatures++;
             UpdateUI();
             PlayReward();
+            PlaySfx(signatureSfx);
 
             Debug.Log("✅ Ai primit semnătura de la: " + professorID);
         }
         else
         {
             Debug.Log("⚠️ Ai deja semnătura asta!");
+            signatures = CountSignaturesFromPrefs();
+            UpdateUI();
         }
     }
 
@@ -67,6 +108,83 @@ public class GameManager : MonoBehaviour
             scoreText.text = $"Semnături: {signatures}/{maxSignatures}";
     }
 
+    int CountSignaturesFromPrefs()
+    {
+        var ids = LoadSignatureIds();
+        if (ids.Count == 0)
+            ids = GetProfessorIds();
+
+        int count = 0;
+        foreach (var id in ids)
+        {
+            if (PlayerPrefs.GetInt("Semnatura_" + id, 0) == 1)
+                count++;
+        }
+
+        return count;
+    }
+
+    void ResetSignatureKeys()
+    {
+        var ids = LoadSignatureIds();
+        if (ids.Count == 0)
+            ids = GetProfessorIds();
+
+        foreach (var id in ids)
+        {
+            PlayerPrefs.DeleteKey("Semnatura_" + id);
+        }
+        PlayerPrefs.DeleteKey(SignatureListKey);
+        PlayerPrefs.Save();
+    }
+
+    List<string> GetProfessorIds()
+    {
+        var result = new List<string>();
+        var seen = new HashSet<string>();
+        var chats = FindObjectsOfType<ProfessorChat>(true);
+        foreach (var chat in chats)
+        {
+            if (chat == null) continue;
+            var id = chat.professorID;
+            if (string.IsNullOrEmpty(id)) continue;
+            if (seen.Add(id))
+                result.Add(id);
+        }
+
+        return result;
+    }
+
+    List<string> LoadSignatureIds()
+    {
+        var list = new List<string>();
+        var raw = PlayerPrefs.GetString(SignatureListKey, "");
+        if (string.IsNullOrEmpty(raw))
+            return list;
+
+        var parts = raw.Split(';');
+        foreach (var part in parts)
+        {
+            if (string.IsNullOrEmpty(part)) continue;
+            if (!list.Contains(part))
+                list.Add(part);
+        }
+
+        return list;
+    }
+
+    void RegisterSignatureKey(string professorID)
+    {
+        if (string.IsNullOrEmpty(professorID)) return;
+
+        var ids = LoadSignatureIds();
+        if (!ids.Contains(professorID))
+        {
+            ids.Add(professorID);
+            PlayerPrefs.SetString(SignatureListKey, string.Join(";", ids));
+        }
+    }
+
     void PlayReward()
     {
         if (confettiEffect != null)
@@ -74,7 +192,57 @@ public class GameManager : MonoBehaviour
             confettiEffect.SetActive(true);
             // Daca e particle system, da-i play
             var ps = confettiEffect.GetComponent<ParticleSystem>();
-            if (ps != null) ps.Play();
+            if (ps != null)
+            {
+                ConfigureConfetti(ps);
+                ps.Play();
+            }
+        }
+    }
+
+    void PlaySfx(AudioClip clip)
+    {
+        var audio = AudioManager.EnsureExists();
+        var chosen = clip ?? audio.confettiSfx ?? audio.defaultSfx;
+        if (chosen == null) return;
+        audio.PlayOneShot(chosen);
+    }
+
+    void ConfigureConfetti(ParticleSystem ps)
+    {
+        if (ps == null) return;
+
+        var main = ps.main;
+        if (forceColorConfetti)
+        {
+            var gradient = new Gradient();
+            gradient.SetKeys(
+                new[]
+                {
+                    new GradientColorKey(new Color(0.98f, 0.75f, 0.2f), 0f),
+                    new GradientColorKey(new Color(0.35f, 0.8f, 0.95f), 0.5f),
+                    new GradientColorKey(new Color(0.95f, 0.4f, 0.6f), 1f)
+                },
+                new[]
+                {
+                    new GradientAlphaKey(1f, 0f),
+                    new GradientAlphaKey(1f, 0.7f),
+                    new GradientAlphaKey(1f, 1f)
+                }
+            );
+
+            main.startColor = new ParticleSystem.MinMaxGradient(gradient);
+
+            var colorOverLifetime = ps.colorOverLifetime;
+            colorOverLifetime.enabled = true;
+            colorOverLifetime.color = gradient;
+        }
+
+        if (forceConfettiBurst)
+        {
+            var emission = ps.emission;
+            emission.rateOverTime = 0f;
+            emission.SetBursts(new[] { new ParticleSystem.Burst(0f, 40) });
         }
     }
 
