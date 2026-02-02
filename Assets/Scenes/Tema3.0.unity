@@ -10606,6 +10606,10 @@ MonoBehaviour:
   achievementSubtitle: "Ai colectat {current}/{max} semn\u0103turi!"
   achievementIcon: {fileID: 0}
   keepAchievementBadge: 0
+  showBonkFeedback: 1
+  bonkSprite: {fileID: 21300000, guid: 9b4679b0f3e88984a96a0c1314065469, type: 3}
+  bonkSfx: {fileID: 8300000, guid: 32c96c870f8b7b642a55fe43bd6a460e, type: 3}
+  bonkMessage: Nice try
   wipePlayerPrefsOnStart: 0
 --- !u!4 &1150424460
 Transform:

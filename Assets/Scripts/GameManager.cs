@@ -28,6 +28,11 @@ public class GameManager : MonoBehaviour
     public string achievementSubtitle = "Ai colectat 3/3 semnături!";
     public Sprite achievementIcon;
     public bool keepAchievementBadge = false;
+    [Header("Bonk Feedback")]
+    public bool showBonkFeedback = true;
+    public Sprite bonkSprite;
+    public AudioClip bonkSfx;
+    public string bonkMessage = "Nice try";
     [Header("Debug")]
     public bool wipePlayerPrefsOnStart = false;
 
@@ -110,6 +115,7 @@ public class GameManager : MonoBehaviour
             Debug.Log("⚠️ Ai deja semnătura asta!");
             signatures = CountSignaturesFromPrefs();
             UpdateUI();
+            TriggerBonkFeedback();
         }
     }
 
@@ -311,6 +317,18 @@ public class GameManager : MonoBehaviour
         subtitle = subtitle.Replace("{current}", signatures.ToString()).Replace("{max}", maxSignatures.ToString());
 
         badge.Show(achievementTitle, subtitle, achievementIcon, keepAchievementBadge);
+    }
+
+    void TriggerBonkFeedback()
+    {
+        if (!showBonkFeedback)
+            return;
+
+        var bonk = BonkFeedbackController.EnsureExists();
+        if (bonk == null)
+            return;
+
+        bonk.Show(bonkSprite, bonkMessage, bonkSfx);
     }
 
     // Resetare pt teste (poti apela asta cu un buton)
