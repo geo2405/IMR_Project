@@ -642,6 +642,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.y
       value: 76.315
       objectReference: {fileID: 0}
+    - target: {fileID: 5866666021909216657, guid: 60bb8a1d6a8548d45aca2024af6880ec, type: 3}
+      propertyPath: m_Controller
+      value: 
+      objectReference: {fileID: 9100000, guid: 084ed73b7e7c0754eb337259e9209468, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects:
@@ -700,6 +704,7 @@ MonoBehaviour:
   canvasObject: {fileID: 1786797578}
   distantaActivare: 3
   statusText: {fileID: 1514107728}
+  animateOnProximity: 1
 --- !u!114 &52005175
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5915,7 +5920,6 @@ GameObject:
   - component: {fileID: 582961449}
   - component: {fileID: 582961448}
   - component: {fileID: 582961453}
-  - component: {fileID: 582961454}
   m_Layer: 5
   m_Name: Canvas
   m_TagString: Untagged
@@ -6068,27 +6072,6 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
---- !u!114 &582961454
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 582961446}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1f23681fcee54674a2ac3d139e5d053a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  animator: {fileID: 0}
-  autoResolveAnimator: 1
-  avatarOverride: {fileID: 0}
-  idleController: {fileID: 9100000, guid: 084ed73b7e7c0754eb337259e9209468, type: 2}
-  talkController: {fileID: 9100000, guid: 013e11dc1ceff254282379cbb8cb530f, type: 2}
-  boolParameter: IsTalking
-  idleState: Idle
-  talkState: Talk
-  crossFade: 0.15
 --- !u!1 &633934291
 GameObject:
   m_ObjectHideFlags: 0
@@ -6799,6 +6782,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.y
       value: 76.315
       objectReference: {fileID: 0}
+    - target: {fileID: 5866666021909216657, guid: 60bb8a1d6a8548d45aca2024af6880ec, type: 3}
+      propertyPath: m_Controller
+      value: 
+      objectReference: {fileID: 9100000, guid: 084ed73b7e7c0754eb337259e9209468, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects:
@@ -7005,6 +6992,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.y
       value: 76.315
       objectReference: {fileID: 0}
+    - target: {fileID: 5866666021909216657, guid: 60bb8a1d6a8548d45aca2024af6880ec, type: 3}
+      propertyPath: m_Controller
+      value: 
+      objectReference: {fileID: 9100000, guid: 084ed73b7e7c0754eb337259e9209468, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects:
@@ -7063,6 +7054,7 @@ MonoBehaviour:
   canvasObject: {fileID: 249865940}
   distantaActivare: 3
   statusText: {fileID: 1124544565}
+  animateOnProximity: 1
 --- !u!114 &763977813
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -9834,6 +9826,7 @@ MonoBehaviour:
   canvasObject: {fileID: 1407757541}
   distantaActivare: 3
   statusText: {fileID: 1643919618}
+  animateOnProximity: 1
 --- !u!1 &1064240178
 GameObject:
   m_ObjectHideFlags: 0
@@ -10610,7 +10603,7 @@ MonoBehaviour:
   finalBurstCount: 90
   showAchievementBadge: 1
   achievementTitle: Achievement Deblocat!
-  achievementSubtitle: Ai colectat {current}/{max} semnături!
+  achievementSubtitle: "Ai colectat {current}/{max} semn\u0103turi!"
   achievementIcon: {fileID: 0}
   keepAchievementBadge: 0
   wipePlayerPrefsOnStart: 0
@@ -18225,6 +18218,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.y
       value: 76.315
       objectReference: {fileID: 0}
+    - target: {fileID: 5866666021909216657, guid: 60bb8a1d6a8548d45aca2024af6880ec, type: 3}
+      propertyPath: m_Controller
+      value: 
+      objectReference: {fileID: 9100000, guid: 084ed73b7e7c0754eb337259e9209468, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects:
@@ -18280,6 +18277,7 @@ MonoBehaviour:
   canvasObject: {fileID: 147327649}
   distantaActivare: 3
   statusText: {fileID: 880803101}
+  animateOnProximity: 1
 --- !u!114 &1610040959
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -20776,7 +20774,6 @@ GameObject:
   - component: {fileID: 1885795531}
   - component: {fileID: 1885795530}
   - component: {fileID: 1885795536}
-  - component: {fileID: 1885795535}
   m_Layer: 5
   m_Name: Canvas
   m_TagString: Untagged
@@ -20908,27 +20905,6 @@ Canvas:
   m_SortingLayerID: 0
   m_SortingOrder: 0
   m_TargetDisplay: 0
---- !u!114 &1885795535
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1885795528}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1f23681fcee54674a2ac3d139e5d053a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  animator: {fileID: 0}
-  autoResolveAnimator: 1
-  avatarOverride: {fileID: 0}
-  idleController: {fileID: 9100000, guid: 084ed73b7e7c0754eb337259e9209468, type: 2}
-  talkController: {fileID: 9100000, guid: 013e11dc1ceff254282379cbb8cb530f, type: 2}
-  boolParameter: IsTalking
-  idleState: Idle
-  talkState: Talk
-  crossFade: 0.15
 --- !u!95 &1885795536
 Animator:
   serializedVersion: 5
@@ -21536,9 +21512,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1f23681fcee54674a2ac3d139e5d053a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  animator: {fileID: 406932234}
+  animator: {fileID: 2127666872}
   autoResolveAnimator: 1
-  avatarOverride: {fileID: 0}
+  avatarOverride: {fileID: 9000000, guid: 60bb8a1d6a8548d45aca2024af6880ec, type: 3}
   idleController: {fileID: 9100000, guid: 084ed73b7e7c0754eb337259e9209468, type: 2}
   talkController: {fileID: 9100000, guid: 013e11dc1ceff254282379cbb8cb530f, type: 2}
   boolParameter: IsTalking
@@ -21557,9 +21533,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1f23681fcee54674a2ac3d139e5d053a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  animator: {fileID: 0}
+  animator: {fileID: 2000000005}
   autoResolveAnimator: 1
-  avatarOverride: {fileID: 0}
+  avatarOverride: {fileID: 9000000, guid: 60bb8a1d6a8548d45aca2024af6880ec, type: 3}
   idleController: {fileID: 9100000, guid: 084ed73b7e7c0754eb337259e9209468, type: 2}
   talkController: {fileID: 9100000, guid: 013e11dc1ceff254282379cbb8cb530f, type: 2}
   boolParameter: IsTalking
@@ -21578,9 +21554,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1f23681fcee54674a2ac3d139e5d053a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  animator: {fileID: 305234053}
+  animator: {fileID: 2000000007}
   autoResolveAnimator: 1
-  avatarOverride: {fileID: 0}
+  avatarOverride: {fileID: 9000000, guid: 60bb8a1d6a8548d45aca2024af6880ec, type: 3}
   idleController: {fileID: 9100000, guid: 084ed73b7e7c0754eb337259e9209468, type: 2}
   talkController: {fileID: 9100000, guid: 013e11dc1ceff254282379cbb8cb530f, type: 2}
   boolParameter: IsTalking
@@ -21599,15 +21575,30 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1f23681fcee54674a2ac3d139e5d053a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  animator: {fileID: 0}
+  animator: {fileID: 2000000006}
   autoResolveAnimator: 1
-  avatarOverride: {fileID: 0}
+  avatarOverride: {fileID: 9000000, guid: 60bb8a1d6a8548d45aca2024af6880ec, type: 3}
   idleController: {fileID: 9100000, guid: 084ed73b7e7c0754eb337259e9209468, type: 2}
   talkController: {fileID: 9100000, guid: 013e11dc1ceff254282379cbb8cb530f, type: 2}
   boolParameter: IsTalking
   idleState: Idle
   talkState: Talk
   crossFade: 0.15
+--- !u!95 &2000000005 stripped
+Animator:
+  m_CorrespondingSourceObject: {fileID: 5866666021909216657, guid: 60bb8a1d6a8548d45aca2024af6880ec, type: 3}
+  m_PrefabInstance: {fileID: 722394932}
+  m_PrefabAsset: {fileID: 0}
+--- !u!95 &2000000006 stripped
+Animator:
+  m_CorrespondingSourceObject: {fileID: 5866666021909216657, guid: 60bb8a1d6a8548d45aca2024af6880ec, type: 3}
+  m_PrefabInstance: {fileID: 1610040955}
+  m_PrefabAsset: {fileID: 0}
+--- !u!95 &2000000007 stripped
+Animator:
+  m_CorrespondingSourceObject: {fileID: 5866666021909216657, guid: 60bb8a1d6a8548d45aca2024af6880ec, type: 3}
+  m_PrefabInstance: {fileID: 763977809}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &2059634046
 GameObject:
   m_ObjectHideFlags: 0
@@ -21961,6 +21952,11 @@ MonoBehaviour:
   serverIP: 127.0.0.1
   port: 1234
   model: local-model
+--- !u!95 &2127666872 stripped
+Animator:
+  m_CorrespondingSourceObject: {fileID: 5866666021909216657, guid: 60bb8a1d6a8548d45aca2024af6880ec, type: 3}
+  m_PrefabInstance: {fileID: 52005171}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &2131307388
 GameObject:
   m_ObjectHideFlags: 0
