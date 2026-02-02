@@ -32,10 +32,28 @@ public class ProfessorChat : MonoBehaviour
     private ConversationLog conversationLog = new ConversationLog();
     private ProfessorAnimationController animController;
 
+    // --- AICI LIPSEA DECLARAȚIA ---
+    private ProfessorProfile currentProfile;
+    // -----------------------------
+
     void Awake()
     {
         ResolveAnimator();
     }
+
+    // --- AM ADĂUGAT START CA SĂ GĂSIM PROFILUL ---
+    void Start()
+    {
+        // Încercăm să găsim profilul pe acest obiect
+        currentProfile = GetComponent<ProfessorProfile>();
+
+        // Dacă nu e pe obiect, poate e în manager (fallback)
+        if (currentProfile == null && ProfessorManager.Instance != null)
+        {
+            currentProfile = ProfessorManager.Instance.activeProfessor;
+        }
+    }
+    // ---------------------------------------------
 
     // =========================
     // 1. INPUT 
@@ -66,7 +84,7 @@ public class ProfessorChat : MonoBehaviour
     }
 
     // =========================
-    // 2. LOGICA PREMIUM (REPARATĂ: FĂRĂ TIMEOUT)
+    // 2. LOGICA PREMIUM
     // =========================
 
     IEnumerator ProcessFlow(string question)
@@ -91,34 +109,30 @@ public class ProfessorChat : MonoBehaviour
         }));
 
         // 2. Așteptăm fix 3 secunde (de frumusețe)
-        yield return new WaitForSeconds(5.0f);
+        yield return new WaitForSeconds(3.0f);
 
-        // Dacă serverul a terminat deja (pc rachetă), nu mai scriem "Imediat", afișăm direct
         if (!requestComplete)
         {
             if (outputText != null) outputText.text = "✋ Vă răspund imediat...";
         }
 
-        // 3. Mai așteptăm încă 2 secunde
-        yield return new WaitForSeconds(10.0f);
+        yield return new WaitForSeconds(5.0f);
 
-        // Dacă tot nu a terminat...
         if (!requestComplete)
         {
             if (outputText != null) outputText.text = "💡 Așadar...";
         }
 
-        // 4. AȘTEPTARE REALĂ (AICI ERA PROBLEMA!)
-        // Acum așteptăm oricât e nevoie. Nu mai există limită de timp artificială.
+        // 4. AȘTEPTARE REALĂ
         while (!requestComplete)
         {
-            yield return null; // Stăm aici până termină LM Studio, fie și 2 minute.
+            yield return null;
         }
 
         // 5. Afișăm rezultatul
         if (requestError || string.IsNullOrEmpty(finalJson))
         {
-            if (outputText != null) outputText.text = "Eroare: LM Studio nu a răspuns sau s-a întrerupt conexiunea.";
+            if (outputText != null) outputText.text = "Eroare: LM Studio nu a răspuns.";
             PlaySfx(errorSfx, true);
         }
         else
@@ -138,11 +152,8 @@ public class ProfessorChat : MonoBehaviour
 
     IEnumerator MakeRequest(string url, string question, System.Action<string> callback)
     {
-        ProfessorProfile prof = null;
-        if (ProfessorManager.Instance != null) prof = ProfessorManager.Instance.activeProfessor;
-        if (prof == null) prof = GetComponent<ProfessorProfile>();
-
-        string systemPrompt = prof != null ? prof.systemPrompt : "Ești un profesor.";
+        // Folosim variabila cached currentProfile
+        string systemPrompt = currentProfile != null ? currentProfile.systemPrompt : "Ești un profesor.";
 
         // JSON Body
         string jsonBody = "{ \"model\": \"" + model + "\", \"messages\": [ {\"role\": \"system\", \"content\": \"" + EscapeJson(systemPrompt) + "\"}, {\"role\": \"user\", \"content\": \"" + EscapeJson(question) + "\"} ], \"temperature\": 0.7, \"max_tokens\": 300, \"stream\": false }";
@@ -154,10 +165,7 @@ public class ProfessorChat : MonoBehaviour
             www.downloadHandler = new DownloadHandlerBuffer();
             www.SetRequestHeader("Content-Type", "application/json");
 
-
-            // TIMEOUT MĂRIT LA 5 MINUTE (300 secunde)
-            // Local LLM poate fi lent, îi dăm timp să respire.
-            www.timeout = 300;
+            www.timeout = 300; // 5 minute
 
             yield return www.SendWebRequest();
 
@@ -174,7 +182,7 @@ public class ProfessorChat : MonoBehaviour
     }
 
     // =========================
-    // 4. EFECTE VIZUALE
+    // 4. EFECTE VIZUALE & FINALIZARE
     // =========================
 
     IEnumerator TypewriterEffect(string fullText)
@@ -195,8 +203,42 @@ public class ProfessorChat : MonoBehaviour
         if (outputText != null) outputText.text = "";
         if (inputField != null) inputField.text = "";
 
-        if (GameManager.Instance != null)
-            GameManager.Instance.CollectSignature(professorID);
+        // Verificăm dacă avem profil pentru calcul
+        if (currentProfile != null)
+        {
+            // 1. Calculăm scorul folosind scriptul static (CompatibilityScorer)
+            // Acesta returnează un tuplu: (int score, string explanation)
+            var rezultat = CompatibilityScorer.Compute(conversationLog, currentProfile);
+
+            int scorFinal = rezultat.score;
+            string explicatieFinala = rezultat.explanation;
+
+            Debug.Log($"📊 RAPORT FINAL: {scorFinal}% - {explicatieFinala}");
+
+            // 2. Salvăm în GameManager (pentru finalul jocului/fantomă)
+            if (GameManager.Instance != null)
+            {
+                GameManager.Instance.InregistreazaScor(scorFinal, professorID);
+                GameManager.Instance.CollectSignature(professorID);
+            }
+
+            // 3. AFIȘĂM PANOUL GALBEN (Dacă există)
+            if (ScoreDisplay.Instance != null)
+            {
+                // Aici trimitem tot pachetul
+                ScoreDisplay.Instance.ArataScorComplet(scorFinal, explicatieFinala);
+            }
+            else
+            {
+                Debug.LogError("❌ NU GASESC ScoreDisplay în scenă! Asigură-te că Canvas_Scor este activ.");
+            }
+        }
+        else
+        {
+            Debug.LogWarning("⚠️ Nu am găsit profilul profesorului, nu pot calcula compatibilitatea.");
+            // Fallback: dăm doar semnătura
+            if (GameManager.Instance != null) GameManager.Instance.CollectSignature(professorID);
+        }
 
         SetTalking(false);
         AudioManager.EnsureExists().ResumeAmbient();
@@ -264,14 +306,11 @@ public class ProfessorChat : MonoBehaviour
 
     void ResolveAnimator()
     {
-        if (animController != null)
-            return;
+        if (animController != null) return;
 
         animController = GetComponentInParent<ProfessorAnimationController>();
-        if (animController == null)
-            animController = GetComponentInChildren<ProfessorAnimationController>();
-        if (animController == null)
-            animController = GetComponent<ProfessorAnimationController>();
+        if (animController == null) animController = GetComponentInChildren<ProfessorAnimationController>();
+        if (animController == null) animController = GetComponent<ProfessorAnimationController>();
 
         if (animController == null)
         {
@@ -289,7 +328,6 @@ public class ProfessorChat : MonoBehaviour
     void SetTalking(bool talking)
     {
         ResolveAnimator();
-        if (animController != null)
-            animController.SetTalking(talking);
+        if (animController != null) animController.SetTalking(talking);
     }
 }

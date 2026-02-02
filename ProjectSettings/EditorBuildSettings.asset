@@ -8,6 +8,9 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/Tema3.0.unity
     guid: d9e97fd527cebd149a8ec8401ac2ee79
+  - enabled: 1
+    path: Assets/Scenes/Scena_Fantoma.unity
+    guid: c33d34aab76e1ff428f977cfb2f411c2
   m_configObjects:
     com.unity.xr.management.loader_settings: {fileID: 11400000, guid: 601124112de7f05489e6370c75ccc160, type: 2}
     com.unity.xr.openxr.settings4: {fileID: 11400000, guid: 383a68957931c0f4880c053f72fc6849, type: 2}

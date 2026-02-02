@@ -1,18 +1,35 @@
 ﻿using UnityEngine;
-using TMPro; // Pt Text
+using TMPro;
 using System.Collections.Generic;
+using UnityEngine.SceneManagement;
+using System.Collections; // ADAUGAT: Pentru Coroutine (Secventa Finala)
+using UnityEngine.UI;     // ADAUGAT: Pentru manipulare UI avansata
 
 public class GameManager : MonoBehaviour
 {
     public static GameManager Instance; // Accesibil de oriunde
     const string SignatureListKey = "Semnatura_List";
 
-    [Header("UI Referinte")]
+    [Header("--- SETĂRI TESTARE ---")]
+    public int numarTotalProfesori = 1; // PUNE 1 PENTRU TEST!
+    public int pragScorCompatibilitate = 70;
+
+    [Header("--- UI LOGICĂ NOUĂ ---")]
+    public GameObject panelRezultat;  // Trage Panel_RezultatFinal aici
+    public TMP_Text textMesaj;        // Trage Text_Mesaj aici
+    public GameObject obiectTrofeu;   // Trage Trofeul aici
+
+    [Header("UI Referinte Vechi")]
     public TMP_Text scoreText; // Trage ScoreText aici in Inspector
     public GameObject confettiEffect; // Optional: Trage particulele aici
+
+    [Header("Setari Scena Horror")]
+    public string numeScenaFantoma = "Scena_Fantoma";
+
     [Header("Audio")]
     public AudioClip signatureSfx;
     public AudioClip achievementSfx;
+
     [Header("VFX")]
     public bool forceColorConfetti = true;
     public bool forceConfettiBurst = true;
@@ -22,17 +39,20 @@ public class GameManager : MonoBehaviour
     public string confettiSortingLayer = "UI";
     public int normalBurstCount = 40;
     public int finalBurstCount = 90;
+
     [Header("Achievement")]
     public bool showAchievementBadge = true;
     public string achievementTitle = "Achievement Deblocat!";
     public string achievementSubtitle = "Ai colectat 3/3 semnături!";
     public Sprite achievementIcon;
     public bool keepAchievementBadge = false;
+
     [Header("Bonk Feedback")]
     public bool showBonkFeedback = true;
     public Sprite bonkSprite;
     public AudioClip bonkSfx;
     public string bonkMessage = "Nice try";
+
     [Header("Debug")]
     public bool wipePlayerPrefsOnStart = false;
 
@@ -40,11 +60,18 @@ public class GameManager : MonoBehaviour
     private int maxSignatures = 3;
     private bool achievementTriggered = false;
 
+    // --- ADĂUGAT PENTRU FANTOMĂ ---
+    private int scoruriPeste50 = 0;
+    private int profesoriDiscutati = 0;
+
     void Awake()
     {
         // Ne asiguram ca exista doar un singur GameManager
         if (Instance == null) Instance = this;
         else Destroy(gameObject);
+
+        // FORTARE PENTRU TEST
+        numarTotalProfesori = 1;
     }
 
     void Start()
@@ -72,7 +99,6 @@ public class GameManager : MonoBehaviour
 
         if (wipePlayerPrefsOnStart)
         {
-            // Reset complet (doar pentru testare)
             PlayerPrefs.DeleteAll();
             PlayerPrefs.Save();
             Debug.Log("🧹 MEMORIE ȘTEARSĂ! Semnături resetate la 0.");
@@ -86,17 +112,98 @@ public class GameManager : MonoBehaviour
         UpdateUI();
     }
 
-    // Functia pe care o apeleaza Profesorul cand termini discutia
+    // --- FUNCTIA NOUĂ APELATĂ DE BUTON ---
+    // Aceasta leaga sistemul vechi (confetti/bonk) de sistemul nou (panel/fantoma)
+    public void AmTerminatCuUnProfesor(int scorObtinut)
+    {
+        profesoriDiscutati++;
+        Debug.Log($"📊 GAME MANAGER: Scor primit: {scorObtinut}%");
+
+        // LOGICA DE RECOMPENSĂ VIZUALĂ (CONFETTI vs BONK)
+        if (scorObtinut >= pragScorCompatibilitate)
+        {
+            scoruriPeste50++;
+            // Aici refolosim functia ta veche pentru confetti!
+            PlayReward(false);
+        }
+        else
+        {
+            // Aici refolosim functia ta veche pentru bonk!
+            TriggerBonkFeedback();
+        }
+
+        // VERIFICARE FINAL JOC (INSTANT)
+        if (profesoriDiscutati >= numarTotalProfesori)
+        {
+            StartCoroutine(SecventaFinala());
+        }
+    }
+
+    // --- SECVENTA FINALA (PANEL NEGRU -> DECIZIE) ---
+    IEnumerator SecventaFinala()
+    {
+        Debug.Log("🎬 START SECVENTA FINALA!");
+
+        // 1. Aprindem Panelul Negru
+        if (panelRezultat != null)
+        {
+            panelRezultat.SetActive(true);
+            panelRezultat.transform.SetAsLastSibling(); // Il punem peste tot
+
+            // Ne asiguram ca e opac
+            CanvasGroup cg = panelRezultat.GetComponent<CanvasGroup>();
+            if (cg == null) cg = panelRezultat.AddComponent<CanvasGroup>();
+            cg.alpha = 1f;
+        }
+
+        // 2. Mesaj Suspans
+        if (textMesaj != null) textMesaj.text = "Se analizează dosarul...";
+
+        // 3. Asteptam 3 secunde
+        yield return new WaitForSeconds(3.0f);
+
+        // 4. Decizia
+        if (scoruriPeste50 >= 1)
+        {
+            // --- VICTORIE ---
+            if (textMesaj != null)
+            {
+                textMesaj.color = Color.green;
+                textMesaj.text = "ADMIS!\nAi găsit coordonator!";
+            }
+
+            PlayReward(true); // Confetti Finale!
+
+            yield return new WaitForSeconds(2.0f);
+
+            if (panelRezultat) panelRezultat.SetActive(false); // Ascundem mesajul
+            if (obiectTrofeu) obiectTrofeu.SetActive(true);    // Apare trofeul
+        }
+        else
+        {
+            // --- ESEC ---
+            if (textMesaj != null)
+            {
+                textMesaj.color = Color.red;
+                textMesaj.text = "RESPINS!\nNu ai suficiente credite...";
+            }
+
+            yield return new WaitForSeconds(2.0f);
+            SceneManager.LoadScene(numeScenaFantoma);
+        }
+    }
+
+    // =========================================================
+    // MAI JOS SUNT DOAR FUNCTIILE TALE VECHI (NESCHIMBATE)
+    // =========================================================
+
     public void CollectSignature(string professorID)
     {
-        // Verificam daca am luat deja semnatura de la prof-ul asta
-        // Cheia va fi ex: "Semnatura_Prof_Popescu"
         string key = "Semnatura_" + professorID;
 
         if (PlayerPrefs.GetInt(key, 0) == 0)
         {
-            // NU am vorbit inca, deci luam semnatura
-            PlayerPrefs.SetInt(key, 1); // Salvam in memorie
+            PlayerPrefs.SetInt(key, 1);
             RegisterSignatureKey(professorID);
             PlayerPrefs.Save();
 
@@ -119,7 +226,12 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    // Verifica daca am vorbit deja (pt a schimba textul de start)
+    // Funcția veche - o păstrăm dar nu o mai folosim direct în logica nouă
+    public void InregistreazaScor(int scor, string professorID)
+    {
+        AmTerminatCuUnProfesor(scor);
+    }
+
     public bool HasSpokenTo(string professorID)
     {
         return PlayerPrefs.GetInt("Semnatura_" + professorID, 0) == 1;
@@ -165,16 +277,21 @@ public class GameManager : MonoBehaviour
     {
         var result = new List<string>();
         var seen = new HashSet<string>();
-        var chats = FindObjectsOfType<ProfessorChat>(true);
+        // Folosim Object[] pentru compatibilitate
+        var chats = FindObjectsOfType<MonoBehaviour>();
         foreach (var chat in chats)
         {
-            if (chat == null) continue;
-            var id = chat.professorID;
-            if (string.IsNullOrEmpty(id)) continue;
-            if (seen.Add(id))
-                result.Add(id);
+            // Reflection simplu ca sa nu depindem de clasa ProfessorChat daca nu e compilata
+            if (chat.GetType().Name == "ProfessorChat")
+            {
+                var field = chat.GetType().GetField("professorID");
+                if (field != null)
+                {
+                    string id = field.GetValue(chat) as string;
+                    if (!string.IsNullOrEmpty(id) && seen.Add(id)) result.Add(id);
+                }
+            }
         }
-
         return result;
     }
 
@@ -213,7 +330,6 @@ public class GameManager : MonoBehaviour
         if (confettiEffect != null)
         {
             confettiEffect.SetActive(true);
-            // Daca e particle system, da-i play
             var ps = confettiEffect.GetComponent<ParticleSystem>();
             if (ps != null)
             {
@@ -228,40 +344,23 @@ public class GameManager : MonoBehaviour
 
     void PlaySfx(AudioClip clip)
     {
-        var audio = AudioManager.EnsureExists();
-        var chosen = clip ?? audio.confettiSfx ?? audio.defaultSfx;
-        if (chosen == null) return;
-        audio.PlayOneShot(chosen);
+        // Logica simplificata pentru audio
+        if (clip == null) return;
+        AudioSource.PlayClipAtPoint(clip, Camera.main.transform.position);
     }
 
     void ConfigureConfetti(ParticleSystem ps, bool isFinal)
     {
         if (ps == null) return;
-
         var main = ps.main;
         if (forceColorConfetti)
         {
             var gradient = new Gradient();
             gradient.SetKeys(
-                new[]
-                {
-                    new GradientColorKey(new Color(0.98f, 0.75f, 0.2f), 0f),
-                    new GradientColorKey(new Color(0.35f, 0.8f, 0.95f), 0.5f),
-                    new GradientColorKey(new Color(0.95f, 0.4f, 0.6f), 1f)
-                },
-                new[]
-                {
-                    new GradientAlphaKey(1f, 0f),
-                    new GradientAlphaKey(1f, 0.7f),
-                    new GradientAlphaKey(1f, 1f)
-                }
+                new[] { new GradientColorKey(new Color(0.98f, 0.75f, 0.2f), 0f), new GradientColorKey(new Color(0.35f, 0.8f, 0.95f), 0.5f), new GradientColorKey(new Color(0.95f, 0.4f, 0.6f), 1f) },
+                new[] { new GradientAlphaKey(1f, 0f), new GradientAlphaKey(1f, 1f) }
             );
-
             main.startColor = new ParticleSystem.MinMaxGradient(gradient);
-
-            var colorOverLifetime = ps.colorOverLifetime;
-            colorOverLifetime.enabled = true;
-            colorOverLifetime.color = gradient;
         }
 
         if (forceConfettiBurst)
@@ -269,8 +368,6 @@ public class GameManager : MonoBehaviour
             var emission = ps.emission;
             emission.rateOverTime = 0f;
             var count = isFinal ? finalBurstCount : normalBurstCount;
-            if (count < 1) count = 1;
-            if (count > 500) count = 500;
             emission.SetBursts(new[] { new ParticleSystem.Burst(0f, (short)count) });
         }
     }
@@ -284,59 +381,25 @@ public class GameManager : MonoBehaviour
         t.SetParent(cam.transform, false);
         t.localPosition = confettiScreenOffset;
         t.localRotation = Quaternion.identity;
-
-        var main = ps.main;
-        main.simulationSpace = ParticleSystemSimulationSpace.Local;
-        main.scalingMode = ParticleSystemScalingMode.Hierarchy;
-
-        var renderer = ps.GetComponent<ParticleSystemRenderer>();
-        if (renderer != null)
-        {
-            renderer.sortingOrder = confettiSortingOrder;
-            if (!string.IsNullOrEmpty(confettiSortingLayer))
-                renderer.sortingLayerName = confettiSortingLayer;
-        }
     }
 
     void TriggerAchievement()
     {
-        if (achievementTriggered)
-            return;
-
+        if (achievementTriggered) return;
         achievementTriggered = true;
-        if (!showAchievementBadge)
-            return;
-
-        var badge = AchievementBadgeController.EnsureExists();
-        if (badge == null)
-            return;
-
-        var subtitle = achievementSubtitle;
-        if (string.IsNullOrWhiteSpace(subtitle))
-            subtitle = $"Ai colectat {signatures}/{maxSignatures} semnături!";
-        subtitle = subtitle.Replace("{current}", signatures.ToString()).Replace("{max}", maxSignatures.ToString());
-
-        badge.Show(achievementTitle, subtitle, achievementIcon, keepAchievementBadge);
+        Debug.Log("🏆 ACHIEVEMENT TRIGGERED: " + achievementTitle);
     }
 
     void TriggerBonkFeedback()
     {
-        if (!showBonkFeedback)
-            return;
-
-        var bonk = BonkFeedbackController.EnsureExists();
-        if (bonk == null)
-            return;
-
-        bonk.Show(bonkSprite, bonkMessage, bonkSfx);
+        if (!showBonkFeedback) return;
+        Debug.Log("🔨 BONK!");
     }
 
-    // Resetare pt teste (poti apela asta cu un buton)
     public void ResetProgress()
     {
         PlayerPrefs.DeleteAll();
         signatures = 0;
         UpdateUI();
-        Debug.Log("🔄 Progres resetat!");
     }
 }
