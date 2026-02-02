@@ -11,6 +11,9 @@ public class ProximityChat : MonoBehaviour
     [Header("Mesaj Ajutător")]
     public TMP_Text statusText;
 
+    [Header("Animatie Proximitate")]
+    public bool animateOnProximity = true;
+
     private CanvasGroup canvasGroup;
     private bool isClose = false;
 
@@ -91,6 +94,9 @@ public class ProximityChat : MonoBehaviour
         }
 
         if (statusText != null) statusText.text = "Apasă [SPACE] pentru a vorbi...";
+
+        if (animateOnProximity && myChatScript != null)
+            myChatScript.SetConversationActive(true);
     }
 
     void HideCanvas()
@@ -108,5 +114,8 @@ public class ProximityChat : MonoBehaviour
         {
             GoogleVoice.Instance.activeProfessor = null;
         }
+
+        if (animateOnProximity && myChatScript != null)
+            myChatScript.SetConversationActive(false);
     }
 }

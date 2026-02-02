@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using TMPro;
 
 public class EndConversationButton : MonoBehaviour
@@ -71,7 +71,10 @@ public class EndConversationButton : MonoBehaviour
 
                     // 3️⃣ Reset conversație
                     log.Clear();
-                    AudioManager.EnsureExists().ResumeAmbient();
+                    if (manager.activeChat != null)
+                        manager.activeChat.EndConversation();
+                    else
+                        AudioManager.EnsureExists().ResumeAmbient();
                 }
             )
         );

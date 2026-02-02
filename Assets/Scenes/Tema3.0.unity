@@ -667,6 +667,12 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 60bb8a1d6a8548d45aca2024af6880ec, type: 3}
       insertIndex: -1
       addedObject: {fileID: 52005174}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 60bb8a1d6a8548d45aca2024af6880ec, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2000000001}
+    - targetCorrespondingSourceObject: {fileID: 3123038149131688286, guid: 60bb8a1d6a8548d45aca2024af6880ec, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 406932234}
   m_SourcePrefab: {fileID: 100100000, guid: 60bb8a1d6a8548d45aca2024af6880ec, type: 3}
 --- !u!1 &52005172 stripped
 GameObject:
@@ -706,6 +712,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: aa5698f15379b534faa563c9b72e3ebe, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  enterSfx: {fileID: 0}
 --- !u!65 &52005176
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -791,6 +798,9 @@ MonoBehaviour:
   inputField: {fileID: 1551406180}
   outputText: {fileID: 1514107728}
   vitezaScriere: 0.04
+  sendSfx: {fileID: 0}
+  receiveSfx: {fileID: 0}
+  errorSfx: {fileID: 0}
   serverIP: 127.0.0.1
   port: 1234
   model: local-model
@@ -1730,6 +1740,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   llmEvaluator: {fileID: 2111589525}
   resultText: {fileID: 1923983814}
+  endSfx: {fileID: 0}
   alpha: 0.6
 --- !u!114 &225482395
 MonoBehaviour:
@@ -1998,6 +2009,7 @@ GameObject:
   - component: {fileID: 270742452}
   - component: {fileID: 270742456}
   - component: {fileID: 270742457}
+  - component: {fileID: 270742458}
   m_Layer: 5
   m_Name: Canvas
   m_TagString: Untagged
@@ -2104,6 +2116,9 @@ MonoBehaviour:
   inputField: {fileID: 214373597}
   outputText: {fileID: 1643919618}
   vitezaScriere: 0.04
+  sendSfx: {fileID: 0}
+  receiveSfx: {fileID: 0}
+  errorSfx: {fileID: 0}
   serverIP: 192.168.0.105
   port: 1234
   model: openai/gpt-oss-20b
@@ -2126,6 +2141,27 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 4294967295
   m_RaycastTriggerInteraction: 1
+--- !u!95 &270742458
+Animator:
+  serializedVersion: 5
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 270742451}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 084ed73b7e7c0754eb337259e9209468, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!1 &286840499
 GameObject:
   m_ObjectHideFlags: 0
@@ -2223,6 +2259,32 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 286840499}
   m_CullTransparentMesh: 1
+--- !u!1 &305234050 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 3123038149131688286, guid: 60bb8a1d6a8548d45aca2024af6880ec, type: 3}
+  m_PrefabInstance: {fileID: 763977809}
+  m_PrefabAsset: {fileID: 0}
+--- !u!95 &305234053
+Animator:
+  serializedVersion: 5
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 305234050}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 084ed73b7e7c0754eb337259e9209468, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!1 &336524977
 GameObject:
   m_ObjectHideFlags: 0
@@ -3688,6 +3750,32 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 7339749990365776477, guid: 1aaf2dceef22d1147bfc70d706ddd188, type: 3}
   m_PrefabInstance: {fileID: 387146738}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &406932231 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 3123038149131688286, guid: 60bb8a1d6a8548d45aca2024af6880ec, type: 3}
+  m_PrefabInstance: {fileID: 52005171}
+  m_PrefabAsset: {fileID: 0}
+--- !u!95 &406932234
+Animator:
+  serializedVersion: 5
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 406932231}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 084ed73b7e7c0754eb337259e9209468, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!1 &416634727
 GameObject:
   m_ObjectHideFlags: 0
@@ -5826,6 +5914,8 @@ GameObject:
   - component: {fileID: 582961450}
   - component: {fileID: 582961449}
   - component: {fileID: 582961448}
+  - component: {fileID: 582961453}
+  - component: {fileID: 582961454}
   m_Layer: 5
   m_Name: Canvas
   m_TagString: Untagged
@@ -5888,6 +5978,9 @@ MonoBehaviour:
   inputField: {fileID: 647076175}
   outputText: {fileID: 880803101}
   vitezaScriere: 0.04
+  sendSfx: {fileID: 0}
+  receiveSfx: {fileID: 0}
+  errorSfx: {fileID: 0}
   serverIP: 192.168.0.105
   port: 1234
   model: openai/gpt-oss-20b
@@ -5954,6 +6047,48 @@ Canvas:
   m_SortingLayerID: 0
   m_SortingOrder: 0
   m_TargetDisplay: 0
+--- !u!95 &582961453
+Animator:
+  serializedVersion: 5
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 582961446}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 084ed73b7e7c0754eb337259e9209468, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &582961454
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 582961446}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1f23681fcee54674a2ac3d139e5d053a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  animator: {fileID: 0}
+  autoResolveAnimator: 1
+  avatarOverride: {fileID: 0}
+  idleController: {fileID: 9100000, guid: 084ed73b7e7c0754eb337259e9209468, type: 2}
+  talkController: {fileID: 9100000, guid: 013e11dc1ceff254282379cbb8cb530f, type: 2}
+  boolParameter: IsTalking
+  idleState: Idle
+  talkState: Talk
+  crossFade: 0.15
 --- !u!1 &633934291
 GameObject:
   m_ObjectHideFlags: 0
@@ -6689,6 +6824,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 60bb8a1d6a8548d45aca2024af6880ec, type: 3}
       insertIndex: -1
       addedObject: {fileID: 983801084}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 60bb8a1d6a8548d45aca2024af6880ec, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2000000002}
   m_SourcePrefab: {fileID: 100100000, guid: 60bb8a1d6a8548d45aca2024af6880ec, type: 3}
 --- !u!1 &728276669
 GameObject:
@@ -6892,6 +7030,12 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 60bb8a1d6a8548d45aca2024af6880ec, type: 3}
       insertIndex: -1
       addedObject: {fileID: 763977812}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 60bb8a1d6a8548d45aca2024af6880ec, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2000000003}
+    - targetCorrespondingSourceObject: {fileID: 3123038149131688286, guid: 60bb8a1d6a8548d45aca2024af6880ec, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 305234053}
   m_SourcePrefab: {fileID: 100100000, guid: 60bb8a1d6a8548d45aca2024af6880ec, type: 3}
 --- !u!1 &763977810 stripped
 GameObject:
@@ -6931,6 +7075,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: aa5698f15379b534faa563c9b72e3ebe, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  enterSfx: {fileID: 0}
 --- !u!65 &763977814
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -7015,6 +7160,9 @@ MonoBehaviour:
   inputField: {fileID: 1539150887}
   outputText: {fileID: 1124544565}
   vitezaScriere: 0.04
+  sendSfx: {fileID: 0}
+  receiveSfx: {fileID: 0}
+  errorSfx: {fileID: 0}
   serverIP: 127.0.0.1
   port: 1234
   model: local-model
@@ -7807,6 +7955,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   llmEvaluator: {fileID: 1667237224}
   resultText: {fileID: 1100033101}
+  endSfx: {fileID: 0}
   alpha: 0.6
 --- !u!114 &865960921
 MonoBehaviour:
@@ -9577,6 +9726,9 @@ MonoBehaviour:
   inputField: {fileID: 214373597}
   outputText: {fileID: 1643919618}
   vitezaScriere: 0.04
+  sendSfx: {fileID: 0}
+  receiveSfx: {fileID: 0}
+  errorSfx: {fileID: 0}
   serverIP: 127.0.0.1
   port: 1234
   model: local-model
@@ -9609,6 +9761,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: aa5698f15379b534faa563c9b72e3ebe, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  enterSfx: {fileID: 0}
 --- !u!65 &983801081
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -9870,6 +10023,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   llmEvaluator: {fileID: 1294901650}
   resultText: {fileID: 2059634047}
+  endSfx: {fileID: 0}
   alpha: 0.6
 --- !u!114 &1064405305
 MonoBehaviour:
@@ -10444,6 +10598,22 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   scoreText: {fileID: 1594071227}
   confettiEffect: {fileID: 1371747624}
+  signatureSfx: {fileID: 8300000, guid: eeeda5dce5e1d344f8e2f6195f16cb38, type: 3}
+  achievementSfx: {fileID: 8300000, guid: 16fba6d30ed741d4a9fdd6e79ee2f3ac, type: 3}
+  forceColorConfetti: 1
+  forceConfettiBurst: 1
+  confettiOnScreen: 1
+  confettiScreenOffset: {x: 0, y: 0.25, z: 1.5}
+  confettiSortingOrder: 5000
+  confettiSortingLayer: UI
+  normalBurstCount: 40
+  finalBurstCount: 90
+  showAchievementBadge: 1
+  achievementTitle: Achievement Deblocat!
+  achievementSubtitle: Ai colectat {current}/{max} semnături!
+  achievementIcon: {fileID: 0}
+  keepAchievementBadge: 0
+  wipePlayerPrefsOnStart: 0
 --- !u!4 &1150424460
 Transform:
   m_ObjectHideFlags: 0
@@ -11298,6 +11468,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   llmEvaluator: {fileID: 2070790198}
   resultText: {fileID: 659348663}
+  endSfx: {fileID: 0}
   alpha: 0.6
 --- !u!114 &1263058166
 MonoBehaviour:
@@ -11458,6 +11629,7 @@ GameObject:
   - component: {fileID: 1325192794}
   - component: {fileID: 1325192793}
   - component: {fileID: 1325192792}
+  - component: {fileID: 1325192798}
   m_Layer: 5
   m_Name: Canvas
   m_TagString: Untagged
@@ -11520,6 +11692,9 @@ MonoBehaviour:
   inputField: {fileID: 1551406180}
   outputText: {fileID: 1514107728}
   vitezaScriere: 0.04
+  sendSfx: {fileID: 0}
+  receiveSfx: {fileID: 0}
+  errorSfx: {fileID: 0}
   serverIP: 192.168.0.105
   port: 1234
   model: openai/gpt-oss-20b
@@ -11586,6 +11761,27 @@ Canvas:
   m_SortingLayerID: 0
   m_SortingOrder: 0
   m_TargetDisplay: 0
+--- !u!95 &1325192798
+Animator:
+  serializedVersion: 5
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1325192790}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 084ed73b7e7c0754eb337259e9209468, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!1 &1350956287
 GameObject:
   m_ObjectHideFlags: 0
@@ -16822,11 +17018,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8d40708b0150e8148be6a5fc7a7a79a9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  activeProfessor: {fileID: 0}
   apiKey: AIzaSyDt3bQzvug2hH5lInL7WXQwfCT4mmwFwCg
   languageCode: ro-RO
   tastaActivare: 32
   casutaTextAvatar: {fileID: 214373597}
-  butonTrimite: {fileID: 909818235}
 --- !u!1 &1514107727
 GameObject:
   m_ObjectHideFlags: 0
@@ -18054,6 +18250,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 60bb8a1d6a8548d45aca2024af6880ec, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1610040958}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 60bb8a1d6a8548d45aca2024af6880ec, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2000000004}
   m_SourcePrefab: {fileID: 100100000, guid: 60bb8a1d6a8548d45aca2024af6880ec, type: 3}
 --- !u!1 &1610040956 stripped
 GameObject:
@@ -18093,6 +18292,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: aa5698f15379b534faa563c9b72e3ebe, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  enterSfx: {fileID: 0}
 --- !u!65 &1610040960
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -18179,6 +18379,9 @@ MonoBehaviour:
   inputField: {fileID: 647076175}
   outputText: {fileID: 880803101}
   vitezaScriere: 0.04
+  sendSfx: {fileID: 0}
+  receiveSfx: {fileID: 0}
+  errorSfx: {fileID: 0}
   serverIP: 127.0.0.1
   port: 1234
   model: local-model
@@ -20572,6 +20775,8 @@ GameObject:
   - component: {fileID: 1885795532}
   - component: {fileID: 1885795531}
   - component: {fileID: 1885795530}
+  - component: {fileID: 1885795536}
+  - component: {fileID: 1885795535}
   m_Layer: 5
   m_Name: Canvas
   m_TagString: Untagged
@@ -20634,6 +20839,9 @@ MonoBehaviour:
   inputField: {fileID: 1539150887}
   outputText: {fileID: 1124544565}
   vitezaScriere: 0.04
+  sendSfx: {fileID: 0}
+  receiveSfx: {fileID: 0}
+  errorSfx: {fileID: 0}
   serverIP: 192.168.0.105
   port: 1234
   model: openai/gpt-oss-20b
@@ -20700,6 +20908,48 @@ Canvas:
   m_SortingLayerID: 0
   m_SortingOrder: 0
   m_TargetDisplay: 0
+--- !u!114 &1885795535
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1885795528}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1f23681fcee54674a2ac3d139e5d053a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  animator: {fileID: 0}
+  autoResolveAnimator: 1
+  avatarOverride: {fileID: 0}
+  idleController: {fileID: 9100000, guid: 084ed73b7e7c0754eb337259e9209468, type: 2}
+  talkController: {fileID: 9100000, guid: 013e11dc1ceff254282379cbb8cb530f, type: 2}
+  boolParameter: IsTalking
+  idleState: Idle
+  talkState: Talk
+  crossFade: 0.15
+--- !u!95 &1885795536
+Animator:
+  serializedVersion: 5
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1885795528}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 084ed73b7e7c0754eb337259e9209468, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!1 &1923983813
 GameObject:
   m_ObjectHideFlags: 0
@@ -21274,6 +21524,90 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1955878882}
   m_CullTransparentMesh: 1
+--- !u!114 &2000000001
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 52005172}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1f23681fcee54674a2ac3d139e5d053a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  animator: {fileID: 406932234}
+  autoResolveAnimator: 1
+  avatarOverride: {fileID: 0}
+  idleController: {fileID: 9100000, guid: 084ed73b7e7c0754eb337259e9209468, type: 2}
+  talkController: {fileID: 9100000, guid: 013e11dc1ceff254282379cbb8cb530f, type: 2}
+  boolParameter: IsTalking
+  idleState: Idle
+  talkState: Talk
+  crossFade: 0.15
+--- !u!114 &2000000002
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 983801076}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1f23681fcee54674a2ac3d139e5d053a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  animator: {fileID: 0}
+  autoResolveAnimator: 1
+  avatarOverride: {fileID: 0}
+  idleController: {fileID: 9100000, guid: 084ed73b7e7c0754eb337259e9209468, type: 2}
+  talkController: {fileID: 9100000, guid: 013e11dc1ceff254282379cbb8cb530f, type: 2}
+  boolParameter: IsTalking
+  idleState: Idle
+  talkState: Talk
+  crossFade: 0.15
+--- !u!114 &2000000003
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 763977810}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1f23681fcee54674a2ac3d139e5d053a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  animator: {fileID: 305234053}
+  autoResolveAnimator: 1
+  avatarOverride: {fileID: 0}
+  idleController: {fileID: 9100000, guid: 084ed73b7e7c0754eb337259e9209468, type: 2}
+  talkController: {fileID: 9100000, guid: 013e11dc1ceff254282379cbb8cb530f, type: 2}
+  boolParameter: IsTalking
+  idleState: Idle
+  talkState: Talk
+  crossFade: 0.15
+--- !u!114 &2000000004
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1610040956}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1f23681fcee54674a2ac3d139e5d053a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  animator: {fileID: 0}
+  autoResolveAnimator: 1
+  avatarOverride: {fileID: 0}
+  idleController: {fileID: 9100000, guid: 084ed73b7e7c0754eb337259e9209468, type: 2}
+  talkController: {fileID: 9100000, guid: 013e11dc1ceff254282379cbb8cb530f, type: 2}
+  boolParameter: IsTalking
+  idleState: Idle
+  talkState: Talk
+  crossFade: 0.15
 --- !u!1 &2059634046
 GameObject:
   m_ObjectHideFlags: 0

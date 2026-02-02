@@ -30,6 +30,12 @@ public class ProfessorChat : MonoBehaviour
 
     // Conectare la clasa existenta in proiect
     private ConversationLog conversationLog = new ConversationLog();
+    private ProfessorAnimationController animController;
+
+    void Awake()
+    {
+        ResolveAnimator();
+    }
 
     // =========================
     // 1. INPUT 
@@ -42,6 +48,7 @@ public class ProfessorChat : MonoBehaviour
         Debug.Log("🎤 Voce: " + text);
         if (inputField != null) inputField.text = "Student: " + text;
 
+        SetTalking(true);
         PlaySfx(sendSfx);
         StartCoroutine(ProcessFlow(text));
     }
@@ -53,6 +60,7 @@ public class ProfessorChat : MonoBehaviour
         if (string.IsNullOrEmpty(text)) return;
 
         inputField.text = "Student: " + text;
+        SetTalking(true);
         PlaySfx(sendSfx);
         StartCoroutine(ProcessFlow(text));
     }
@@ -190,6 +198,7 @@ public class ProfessorChat : MonoBehaviour
         if (GameManager.Instance != null)
             GameManager.Instance.CollectSignature(professorID);
 
+        SetTalking(false);
         AudioManager.EnsureExists().ResumeAmbient();
     }
 
@@ -205,6 +214,12 @@ public class ProfessorChat : MonoBehaviour
     public void ResetConversation()
     {
         if (conversationLog != null) conversationLog.Clear();
+        SetTalking(false);
+    }
+
+    public void SetConversationActive(bool active)
+    {
+        SetTalking(active);
     }
 
     // =========================
@@ -245,5 +260,36 @@ public class ProfessorChat : MonoBehaviour
         var chosen = clip ?? fallback;
         if (chosen == null) return;
         audio.PlayOneShot(chosen);
+    }
+
+    void ResolveAnimator()
+    {
+        if (animController != null)
+            return;
+
+        animController = GetComponentInParent<ProfessorAnimationController>();
+        if (animController == null)
+            animController = GetComponentInChildren<ProfessorAnimationController>();
+        if (animController == null)
+            animController = GetComponent<ProfessorAnimationController>();
+
+        if (animController == null)
+        {
+            var animator = GetComponentInChildren<Animator>();
+            if (animator != null)
+            {
+                animController = animator.GetComponent<ProfessorAnimationController>();
+                if (animController == null)
+                    animController = animator.gameObject.AddComponent<ProfessorAnimationController>();
+                animController.SetAnimator(animator);
+            }
+        }
+    }
+
+    void SetTalking(bool talking)
+    {
+        ResolveAnimator();
+        if (animController != null)
+            animController.SetTalking(talking);
     }
 }

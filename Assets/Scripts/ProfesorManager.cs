@@ -16,6 +16,9 @@ public class ProfessorManager : MonoBehaviour
         ProfessorProfile prof,
         ProfessorChat chat)
     {
+        if (activeChat != null && activeChat != chat)
+            activeChat.SetConversationActive(false);
+
         activeProfessor = prof;
         activeChat = chat;
 

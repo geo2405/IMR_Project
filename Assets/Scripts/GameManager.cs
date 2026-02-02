@@ -12,14 +12,28 @@ public class GameManager : MonoBehaviour
     public GameObject confettiEffect; // Optional: Trage particulele aici
     [Header("Audio")]
     public AudioClip signatureSfx;
+    public AudioClip achievementSfx;
     [Header("VFX")]
     public bool forceColorConfetti = true;
     public bool forceConfettiBurst = true;
+    public bool confettiOnScreen = true;
+    public Vector3 confettiScreenOffset = new Vector3(0f, 0.25f, 1.5f);
+    public int confettiSortingOrder = 5000;
+    public string confettiSortingLayer = "UI";
+    public int normalBurstCount = 40;
+    public int finalBurstCount = 90;
+    [Header("Achievement")]
+    public bool showAchievementBadge = true;
+    public string achievementTitle = "Achievement Deblocat!";
+    public string achievementSubtitle = "Ai colectat 3/3 semnături!";
+    public Sprite achievementIcon;
+    public bool keepAchievementBadge = false;
     [Header("Debug")]
     public bool wipePlayerPrefsOnStart = false;
 
     private int signatures = 0;
     private int maxSignatures = 3;
+    private bool achievementTriggered = false;
 
     void Awake()
     {
@@ -83,8 +97,11 @@ public class GameManager : MonoBehaviour
 
             signatures++;
             UpdateUI();
-            PlayReward();
-            PlaySfx(signatureSfx);
+            var isFinal = signatures >= maxSignatures;
+            PlayReward(isFinal);
+            PlaySfx(isFinal ? achievementSfx : signatureSfx);
+            if (isFinal)
+                TriggerAchievement();
 
             Debug.Log("✅ Ai primit semnătura de la: " + professorID);
         }
@@ -185,7 +202,7 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    void PlayReward()
+    void PlayReward(bool isFinal)
     {
         if (confettiEffect != null)
         {
@@ -194,7 +211,10 @@ public class GameManager : MonoBehaviour
             var ps = confettiEffect.GetComponent<ParticleSystem>();
             if (ps != null)
             {
-                ConfigureConfetti(ps);
+                ConfigureConfetti(ps, isFinal);
+                if (confettiOnScreen)
+                    PositionConfettiOnScreen(ps);
+                ps.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
                 ps.Play();
             }
         }
@@ -208,7 +228,7 @@ public class GameManager : MonoBehaviour
         audio.PlayOneShot(chosen);
     }
 
-    void ConfigureConfetti(ParticleSystem ps)
+    void ConfigureConfetti(ParticleSystem ps, bool isFinal)
     {
         if (ps == null) return;
 
@@ -242,8 +262,55 @@ public class GameManager : MonoBehaviour
         {
             var emission = ps.emission;
             emission.rateOverTime = 0f;
-            emission.SetBursts(new[] { new ParticleSystem.Burst(0f, 40) });
+            var count = isFinal ? finalBurstCount : normalBurstCount;
+            if (count < 1) count = 1;
+            if (count > 500) count = 500;
+            emission.SetBursts(new[] { new ParticleSystem.Burst(0f, (short)count) });
         }
+    }
+
+    void PositionConfettiOnScreen(ParticleSystem ps)
+    {
+        var cam = Camera.main;
+        if (cam == null) return;
+
+        var t = confettiEffect.transform;
+        t.SetParent(cam.transform, false);
+        t.localPosition = confettiScreenOffset;
+        t.localRotation = Quaternion.identity;
+
+        var main = ps.main;
+        main.simulationSpace = ParticleSystemSimulationSpace.Local;
+        main.scalingMode = ParticleSystemScalingMode.Hierarchy;
+
+        var renderer = ps.GetComponent<ParticleSystemRenderer>();
+        if (renderer != null)
+        {
+            renderer.sortingOrder = confettiSortingOrder;
+            if (!string.IsNullOrEmpty(confettiSortingLayer))
+                renderer.sortingLayerName = confettiSortingLayer;
+        }
+    }
+
+    void TriggerAchievement()
+    {
+        if (achievementTriggered)
+            return;
+
+        achievementTriggered = true;
+        if (!showAchievementBadge)
+            return;
+
+        var badge = AchievementBadgeController.EnsureExists();
+        if (badge == null)
+            return;
+
+        var subtitle = achievementSubtitle;
+        if (string.IsNullOrWhiteSpace(subtitle))
+            subtitle = $"Ai colectat {signatures}/{maxSignatures} semnături!";
+        subtitle = subtitle.Replace("{current}", signatures.ToString()).Replace("{max}", maxSignatures.ToString());
+
+        badge.Show(achievementTitle, subtitle, achievementIcon, keepAchievementBadge);
     }
 
     // Resetare pt teste (poti apela asta cu un buton)
