@@ -51,5 +51,5 @@
         "temp/": true,
         "Temp/": true
     },
-    "dotnet.defaultSolution": "IMR_Project.sln"
+    "dotnet.defaultSolution": "IMR_Project2.0.sln"
 }

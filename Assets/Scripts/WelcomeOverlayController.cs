@@ -8,7 +8,7 @@ using UnityEngine.UI;
 using UnityEngine.InputSystem;
 #endif
 
-public class WelcomeOverlayController : MonoBehaviour
+public class WelcomeOverlayController_VR : MonoBehaviour
 {
     private const string DefaultPrefsKey = "welcome_shown";
     private const string PrefabResourcePath = "Prefabs/WelcomeOverlay";
@@ -16,67 +16,54 @@ public class WelcomeOverlayController : MonoBehaviour
     [Header("Content")]
     public string title = "Bine ai venit în FIIVerse!";
     [TextArea(2, 6)]
-    public List<string> pages = new List<string>();
-    public string nextHint = "Apasă N pentru următorul mesaj";
-    public string skipHint = "Esc pentru skip/close";
-
-    [Header("Logos")]
-    public Texture2D[] logoTextures;
+    public List<string> pages = new();
+    public string nextHint = "Next";
+    public string skipHint = "Skip";
 
     [Header("Visual")]
-    public Sprite panelSprite;
-    public Color panelColor = new Color(0.08f, 0.1f, 0.12f, 0.9f);
-    public Color backdropColor = new Color(0f, 0f, 0f, 0.45f);
-    public Vector2 panelSize = new Vector2(900f, 520f);
+    public Color panelColor = new(0.08f, 0.1f, 0.12f, 0.9f);
+    public Color backdropColor = new(0f, 0f, 0f, 0.45f);
+    public Vector2 panelSize = new(900, 520);
+
+    [Header("VR Settings")]
+    public float vrDistance = 1.5f;
+    public float vrScale = 0.001f;
 
     [Header("Animation")]
-    public float fadeDuration = 0.2f;
-    public float slideDistance = 18f;
-
-    [Header("Audio")]
-    public AudioClip openSfx;
-    public AudioClip nextSfx;
-    public AudioClip closeSfx;
+    public float fadeDuration = 0.25f;
 
     [Header("Behavior")]
     public string playerPrefsKey = DefaultPrefsKey;
     public bool alwaysShow = false;
-    public bool allowSkipWithEscape = true;
-    public bool blockGameplayInput = true;
-    public bool useUnscaledTime = true;
-
-    [Header("Confetti")]
-    public bool playConfettiOnOpen = true;
-    public bool playConfettiOnClose = true;
-    public float confettiDuration = 1.5f;
 
     public static bool IsOpen { get; private set; }
 
+    private Canvas canvas;
     private CanvasGroup rootGroup;
-    private CanvasGroup pageGroup;
-    private RectTransform pageRect;
+    private TMP_Text titleText;
     private TMP_Text pageText;
     private TMP_Text hintText;
-    private TMP_Text titleText;
-    private GameObject logoRow;
-    private ParticleSystem confetti;
-    private int pageIndex;
-    private bool isTransitioning;
 
+    private int pageIndex;
+    private bool isVr;
+
+    // ============================
+    // AUTO SPAWN
+    // ============================
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     private static void AutoSpawn()
     {
-        if (Object.FindObjectOfType<WelcomeOverlayController>() != null)
+        if (Object.FindObjectOfType<WelcomeOverlayController_VR>() != null)
             return;
 
         var scene = SceneManager.GetActiveScene();
         if (scene.buildIndex != 0)
             return;
 
-        var prefab = Resources.Load<WelcomeOverlayController>(PrefabResourcePath);
+        var prefab = Resources.Load<WelcomeOverlayController_VR>(PrefabResourcePath);
         if (prefab == null)
         {
-            Debug.LogWarning("WelcomeOverlay prefab missing at Resources/Prefabs/WelcomeOverlay.");
+            Debug.LogWarning("WelcomeOverlay prefab missing at Resources/Prefabs/WelcomeOverlay");
             return;
         }
 
@@ -86,469 +73,229 @@ public class WelcomeOverlayController : MonoBehaviour
         Object.Instantiate(prefab);
     }
 
+    // ============================
+    // UNITY LIFECYCLE
+    // ============================
     private void Awake()
     {
-        if (string.IsNullOrWhiteSpace(playerPrefsKey))
-            playerPrefsKey = DefaultPrefsKey;
-
-        if (!alwaysShow && PlayerPrefs.GetInt(playerPrefsKey, 0) == 1)
-        {
-            gameObject.SetActive(false);
-            return;
-        }
-
-        EnsureDefaultPages();
-        BuildUiIfNeeded();
-        ApplyPage(0, instant: true);
+        DetectMode();
+        EnsurePages();
+        BuildUI();
+        ApplyPage(0);
 
         rootGroup.alpha = 0f;
-        rootGroup.blocksRaycasts = blockGameplayInput;
-        rootGroup.interactable = blockGameplayInput;
     }
 
     private void Start()
     {
-        if (!gameObject.activeInHierarchy)
-            return;
-
-        IsOpen = true;
-        StartCoroutine(FadeCanvas(rootGroup, 0f, 1f, fadeDuration));
-        PlaySfx(openSfx);
-
-        if (playConfettiOnOpen)
-        {
-            EnsureConfetti();
-            confetti.Play(true);
-        }
-    }
-
-    private void OnDisable()
-    {
-        IsOpen = false;
+        StartCoroutine(AttachAndShow());
     }
 
     private void Update()
     {
-        if (!gameObject.activeInHierarchy || isTransitioning)
+        if (!IsOpen)
             return;
 
         if (IsNextPressed())
-        {
-            AdvancePage();
-            return;
-        }
+            Next();
 
-        if (allowSkipWithEscape && IsSkipPressed())
-            Skip();
+        if (IsSkipPressed())
+            Close();
     }
 
-    private void EnsureDefaultPages()
+    // ============================
+    // MODE DETECTION
+    // ============================
+    private void DetectMode()
     {
-        if (pages != null && pages.Count > 0)
-            return;
-
-        pages = new List<string>
-        {
-            "FIIVerse îți oferă un tur rapid: vorbește cu profesorii, colectează semnături și descoperă laboratoarele.",
-            "Folosește N pentru a trece prin mesaje. Poți închide oricând cu Esc.",
-            "Succes! Explorează și distrează-te în FIIverse."
-        };
+        isVr = UnityEngine.XR.XRSettings.isDeviceActive;
     }
 
-    private void BuildUiIfNeeded()
+    // ============================
+    // UI BUILD
+    // ============================
+    private void BuildUI()
     {
-        rootGroup = GetComponent<CanvasGroup>();
+        canvas = gameObject.AddComponent<Canvas>();
+        rootGroup = gameObject.AddComponent<CanvasGroup>();
+        gameObject.AddComponent<GraphicRaycaster>();
 
-        var canvas = GetComponent<Canvas>();
-        if (canvas == null)
-            canvas = gameObject.AddComponent<Canvas>();
-        canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-        canvas.sortingOrder = 1000;
-
-        var scaler = GetComponent<CanvasScaler>();
-        if (scaler == null)
-            scaler = gameObject.AddComponent<CanvasScaler>();
+        var scaler = gameObject.AddComponent<CanvasScaler>();
         scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-        scaler.referenceResolution = new Vector2(1920f, 1080f);
-        scaler.matchWidthOrHeight = 0.5f;
+        scaler.referenceResolution = new Vector2(1920, 1080);
 
-        if (GetComponent<GraphicRaycaster>() == null)
-            gameObject.AddComponent<GraphicRaycaster>();
+        if (isVr)
+        {
+            canvas.renderMode = RenderMode.WorldSpace;
+            canvas.worldCamera = Camera.main;
+        }
+        else
+        {
+            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            canvas.sortingOrder = 1000;
+        }
 
-        if (rootGroup == null)
-            rootGroup = gameObject.AddComponent<CanvasGroup>();
+        var rect = canvas.GetComponent<RectTransform>();
+        rect.sizeDelta = panelSize;
 
-        var backdrop = CreateUi<Image>("Backdrop", transform);
-        var backdropRect = backdrop.rectTransform;
-        backdropRect.anchorMin = Vector2.zero;
-        backdropRect.anchorMax = Vector2.one;
-        backdropRect.offsetMin = Vector2.zero;
-        backdropRect.offsetMax = Vector2.zero;
+        // Backdrop
+        var backdrop = Create<Image>("Backdrop", transform);
         backdrop.color = backdropColor;
+        Stretch(backdrop.rectTransform);
 
-        var panel = CreateUi<Image>("Panel", transform);
-        var panelRect = panel.rectTransform;
-        panelRect.anchorMin = new Vector2(0.5f, 0.5f);
-        panelRect.anchorMax = new Vector2(0.5f, 0.5f);
-        panelRect.pivot = new Vector2(0.5f, 0.5f);
-        panelRect.sizeDelta = panelSize;
-        panelRect.anchoredPosition = Vector2.zero;
+        // Panel
+        var panel = Create<Image>("Panel", transform);
         panel.color = panelColor;
-        if (panelSprite != null)
-        {
-            panel.sprite = panelSprite;
-            panel.type = Image.Type.Sliced;
-        }
+        panel.rectTransform.sizeDelta = panelSize;
+        panel.rectTransform.anchoredPosition = Vector2.zero;
 
-        titleText = CreateTmp("Title", panel.transform, 40, FontStyles.Bold);
-        var titleRect = titleText.rectTransform;
-        titleRect.anchorMin = new Vector2(0.5f, 1f);
-        titleRect.anchorMax = new Vector2(0.5f, 1f);
-        titleRect.pivot = new Vector2(0.5f, 1f);
-        titleRect.sizeDelta = new Vector2(panelSize.x - 120f, 70f);
-        titleRect.anchoredPosition = new Vector2(0f, -24f);
-        titleText.alignment = TextAlignmentOptions.Center;
+        titleText = CreateText("Title", panel.transform, 40, FontStyles.Bold);
         titleText.text = title;
+        titleText.alignment = TextAlignmentOptions.Center;
 
-        pageText = CreateTmp("Message", panel.transform, 26, FontStyles.Normal);
-        pageRect = pageText.rectTransform;
-        pageRect.anchorMin = new Vector2(0.5f, 0.5f);
-        pageRect.anchorMax = new Vector2(0.5f, 0.5f);
-        pageRect.pivot = new Vector2(0.5f, 0.5f);
-        pageRect.sizeDelta = new Vector2(panelSize.x - 140f, 200f);
-        pageRect.anchoredPosition = new Vector2(0f, 10f);
+        pageText = CreateText("Page", panel.transform, 26, FontStyles.Normal);
         pageText.alignment = TextAlignmentOptions.Center;
-        pageText.enableWordWrapping = true;
-        pageText.text = string.Empty;
-        pageGroup = pageText.gameObject.AddComponent<CanvasGroup>();
 
-        logoRow = new GameObject("LogoRow", typeof(RectTransform));
-        logoRow.transform.SetParent(panel.transform, false);
-        var logoRect = logoRow.GetComponent<RectTransform>();
-        logoRect.anchorMin = new Vector2(0.5f, 0f);
-        logoRect.anchorMax = new Vector2(0.5f, 0f);
-        logoRect.pivot = new Vector2(0.5f, 0f);
-        logoRect.sizeDelta = new Vector2(panelSize.x - 160f, 80f);
-        logoRect.anchoredPosition = new Vector2(0f, 72f);
-        var logoLayout = logoRow.AddComponent<HorizontalLayoutGroup>();
-        logoLayout.childAlignment = TextAnchor.MiddleCenter;
-        logoLayout.spacing = 18f;
-        logoLayout.childControlHeight = true;
-        logoLayout.childControlWidth = false;
-        logoLayout.childForceExpandHeight = false;
-        logoLayout.childForceExpandWidth = false;
-
-        PopulateLogos();
-
-        hintText = CreateTmp("Hint", panel.transform, 18, FontStyles.Normal);
-        var hintRect = hintText.rectTransform;
-        hintRect.anchorMin = new Vector2(0.5f, 0f);
-        hintRect.anchorMax = new Vector2(0.5f, 0f);
-        hintRect.pivot = new Vector2(0.5f, 0f);
-        hintRect.sizeDelta = new Vector2(panelSize.x - 120f, 40f);
-        hintRect.anchoredPosition = new Vector2(0f, 18f);
+        hintText = CreateText("Hint", panel.transform, 18, FontStyles.Normal);
         hintText.alignment = TextAlignmentOptions.Center;
-        hintText.color = new Color(1f, 1f, 1f, 0.75f);
+        hintText.color = new Color(1, 1, 1, 0.7f);
     }
 
-    private void PopulateLogos()
+    // ============================
+    // ATTACH & SHOW
+    // ============================
+    private IEnumerator AttachAndShow()
     {
-        if (logoTextures == null || logoTextures.Length == 0)
+        yield return null; // așteaptă XR init
+
+        if (isVr && Camera.main != null)
         {
-            if (logoRow != null)
-                logoRow.SetActive(false);
-            return;
+            transform.SetParent(Camera.main.transform, false);
+            transform.localPosition = new Vector3(0, 0, vrDistance);
+            transform.localRotation = Quaternion.identity;
+            transform.localScale = Vector3.one * vrScale;
         }
 
-        for (int i = 0; i < logoTextures.Length; i++)
-        {
-            var texture = logoTextures[i];
-            if (texture == null)
-                continue;
-
-            var logo = new GameObject("Logo_" + i, typeof(RectTransform));
-            logo.transform.SetParent(logoRow.transform, false);
-
-            var rawImage = logo.AddComponent<RawImage>();
-            rawImage.texture = texture;
-            rawImage.color = Color.white;
-
-            var layout = logo.AddComponent<LayoutElement>();
-            layout.preferredHeight = 52f;
-            layout.preferredWidth = 120f;
-
-            var fitter = logo.AddComponent<AspectRatioFitter>();
-            fitter.aspectMode = AspectRatioFitter.AspectMode.FitInParent;
-            if (texture.height > 0)
-                fitter.aspectRatio = (float)texture.width / texture.height;
-        }
+        IsOpen = true;
+        StartCoroutine(Fade(0, 1));
     }
 
-    private void EnsureConfetti()
+    // ============================
+    // PAGE LOGIC
+    // ============================
+    private void Next()
     {
-        if (confetti != null)
-            return;
-
-        var confettiGo = new GameObject("Confetti", typeof(ParticleSystem));
-        confettiGo.transform.SetParent(transform, false);
-        confettiGo.transform.localPosition = new Vector3(0f, 160f, 0f);
-        confetti = confettiGo.GetComponent<ParticleSystem>();
-        var main = confetti.main;
-        main.duration = confettiDuration;
-        main.loop = false;
-        main.startLifetime = new ParticleSystem.MinMaxCurve(0.8f, 1.4f);
-        main.startSpeed = new ParticleSystem.MinMaxCurve(0.8f, 2.2f);
-        main.startSize = new ParticleSystem.MinMaxCurve(0.08f, 0.14f);
-        main.gravityModifier = 0.2f;
-        main.playOnAwake = false;
-        main.maxParticles = 120;
-
-        var emission = confetti.emission;
-        emission.rateOverTime = 0f;
-        emission.SetBursts(new[] { new ParticleSystem.Burst(0f, 60) });
-
-        var shape = confetti.shape;
-        shape.shapeType = ParticleSystemShapeType.Cone;
-        shape.angle = 25f;
-        shape.radius = 0.2f;
-
-        var colorOverLifetime = confetti.colorOverLifetime;
-        colorOverLifetime.enabled = true;
-        var gradient = new Gradient();
-        gradient.SetKeys(
-            new[]
-            {
-                new GradientColorKey(new Color(0.98f, 0.75f, 0.2f), 0f),
-                new GradientColorKey(new Color(0.35f, 0.8f, 0.95f), 0.5f),
-                new GradientColorKey(new Color(0.95f, 0.4f, 0.6f), 1f)
-            },
-            new[]
-            {
-                new GradientAlphaKey(1f, 0f),
-                new GradientAlphaKey(1f, 0.7f),
-                new GradientAlphaKey(0f, 1f)
-            }
-        );
-        colorOverLifetime.color = gradient;
-
-        var renderer = confetti.GetComponent<ParticleSystemRenderer>();
-        renderer.sortingOrder = 999;
-    }
-
-    private void AdvancePage()
-    {
-        if (pages == null || pages.Count == 0)
-            return;
-
-        if (pageIndex >= pages.Count - 1)
+        pageIndex++;
+        if (pageIndex >= pages.Count)
         {
             Close();
             return;
         }
 
-        PlaySfx(nextSfx);
-        StartCoroutine(AnimateToPage(pageIndex + 1));
+        ApplyPage(pageIndex);
     }
 
-    private void Skip()
+    private void ApplyPage(int index)
     {
-        Close();
+        pageText.text = pages[index];
+        hintText.text = $"{nextHint} | {skipHint} ({index + 1}/{pages.Count})";
     }
 
     private void Close()
     {
-        if (!gameObject.activeInHierarchy)
-            return;
-
-        PlaySfx(closeSfx);
-        StartCoroutine(FadeOutAndClose());
+        StartCoroutine(CloseRoutine());
     }
 
-    private IEnumerator AnimateToPage(int nextIndex)
+    private IEnumerator CloseRoutine()
     {
-        if (pageGroup == null || pageRect == null)
-        {
-            ApplyPage(nextIndex, instant: true);
-            yield break;
-        }
+        yield return Fade(1, 0);
 
-        isTransitioning = true;
-        Vector2 startPos = pageRect.anchoredPosition;
-        Vector2 outPos = startPos + new Vector2(-slideDistance, 0f);
-
-        yield return FadeAndMove(pageGroup, pageRect, 1f, 0f, startPos, outPos, fadeDuration);
-        ApplyPage(nextIndex, instant: true);
-
-        Vector2 inStart = startPos + new Vector2(slideDistance, 0f);
-        pageRect.anchoredPosition = inStart;
-        yield return FadeAndMove(pageGroup, pageRect, 0f, 1f, inStart, startPos, fadeDuration);
-
-        isTransitioning = false;
-    }
-
-    private void ApplyPage(int index, bool instant)
-    {
-        if (pages == null || pages.Count == 0)
-            return;
-
-        pageIndex = Mathf.Clamp(index, 0, pages.Count - 1);
-        pageText.text = pages[pageIndex];
-        if (hintText != null)
-        {
-            string hint = nextHint;
-            if (allowSkipWithEscape)
-                hint = hint + "  |  " + skipHint;
-            hintText.text = hint + $"  ({pageIndex + 1}/{pages.Count})";
-        }
-
-        if (instant && pageGroup != null)
-            pageGroup.alpha = 1f;
-    }
-
-    private IEnumerator FadeOutAndClose()
-    {
-        isTransitioning = true;
-        if (playConfettiOnClose)
-        {
-            EnsureConfetti();
-            confetti.Play(true);
-        }
-
-        rootGroup.blocksRaycasts = false;
-        rootGroup.interactable = false;
-        yield return FadeCanvas(rootGroup, rootGroup.alpha, 0f, fadeDuration);
-        if (playConfettiOnClose)
-            yield return WaitForSecondsConfetti();
         if (!alwaysShow)
         {
             PlayerPrefs.SetInt(playerPrefsKey, 1);
             PlayerPrefs.Save();
         }
+
         IsOpen = false;
         Destroy(gameObject);
     }
 
-    private IEnumerator FadeCanvas(CanvasGroup group, float from, float to, float duration)
+    // ============================
+    // INPUT
+    // ============================
+   private bool IsNextPressed()
+{
+#if ENABLE_INPUT_SYSTEM
+    // PC
+    if (Keyboard.current != null && Keyboard.current.nKey.wasPressedThisFrame)
+        return true;
+
+    // VR – Quest (A button)
+    if (Gamepad.current != null && Gamepad.current.buttonSouth.wasPressedThisFrame)
+        return true;
+#endif
+    return false;
+}
+
+private bool IsSkipPressed()
+{
+#if ENABLE_INPUT_SYSTEM
+    // PC
+    if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
+        return true;
+
+    // VR – Quest (B button)
+    if (Gamepad.current != null && Gamepad.current.buttonEast.wasPressedThisFrame)
+        return true;
+#endif
+    return false;
+}
+    // ============================
+    // HELPERS
+    // ============================
+    private IEnumerator Fade(float from, float to)
     {
-        if (group == null)
-            yield break;
-
         float t = 0f;
-        group.alpha = from;
-        if (duration <= 0f)
+        while (t < fadeDuration)
         {
-            group.alpha = to;
-            yield break;
-        }
-
-        while (t < duration)
-        {
-            t += DeltaTime();
-            group.alpha = Mathf.Lerp(from, to, Mathf.Clamp01(t / duration));
+            t += Time.unscaledDeltaTime;
+            rootGroup.alpha = Mathf.Lerp(from, to, t / fadeDuration);
             yield return null;
         }
-
-        group.alpha = to;
+        rootGroup.alpha = to;
     }
 
-    private IEnumerator FadeAndMove(CanvasGroup group, RectTransform rect, float from, float to, Vector2 posFrom, Vector2 posTo, float duration)
+    private void EnsurePages()
     {
-        if (group == null || rect == null)
-            yield break;
-
-        float t = 0f;
-        group.alpha = from;
-        rect.anchoredPosition = posFrom;
-        if (duration <= 0f)
-        {
-            group.alpha = to;
-            rect.anchoredPosition = posTo;
-            yield break;
-        }
-
-        while (t < duration)
-        {
-            t += DeltaTime();
-            float lerp = Mathf.Clamp01(t / duration);
-            group.alpha = Mathf.Lerp(from, to, lerp);
-            rect.anchoredPosition = Vector2.Lerp(posFrom, posTo, lerp);
-            yield return null;
-        }
-
-        group.alpha = to;
-        rect.anchoredPosition = posTo;
-    }
-
-    private bool IsNextPressed()
-    {
-        bool pressed = false;
-#if ENABLE_INPUT_SYSTEM
-        if (Keyboard.current != null && Keyboard.current.nKey.wasPressedThisFrame)
-            pressed = true;
-#endif
-#if ENABLE_LEGACY_INPUT_MANAGER
-        if (Input.GetKeyDown(KeyCode.N))
-            pressed = true;
-#endif
-        return pressed;
-    }
-
-    private bool IsSkipPressed()
-    {
-        bool pressed = false;
-#if ENABLE_INPUT_SYSTEM
-        if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
-            pressed = true;
-#endif
-#if ENABLE_LEGACY_INPUT_MANAGER
-        if (Input.GetKeyDown(KeyCode.Escape))
-            pressed = true;
-#endif
-        return pressed;
-    }
-
-    private float DeltaTime()
-    {
-        return useUnscaledTime ? Time.unscaledDeltaTime : Time.deltaTime;
-    }
-
-    private IEnumerator WaitForSecondsConfetti()
-    {
-        if (confettiDuration <= 0f)
-            yield break;
-
-        if (useUnscaledTime)
-            yield return new WaitForSecondsRealtime(confettiDuration);
-        else
-            yield return new WaitForSeconds(confettiDuration);
-    }
-
-    private void PlaySfx(AudioClip clip)
-    {
-        var audio = AudioManager.EnsureExists();
-        var chosen = clip ?? audio.defaultSfx;
-        if (chosen == null)
+        if (pages.Count > 0)
             return;
 
-        audio.PlayOneShot(chosen);
+        pages.Add("FIIVerse îți oferă un tur rapid.");
+        pages.Add("Vorbește cu profesorii și colectează semnături.");
+        pages.Add("Succes!");
     }
 
-    private static T CreateUi<T>(string name, Transform parent) where T : Component
+    private static T Create<T>(string name, Transform parent) where T : Component
     {
         var go = new GameObject(name, typeof(RectTransform));
         go.transform.SetParent(parent, false);
         return go.AddComponent<T>();
     }
 
-    private static TMP_Text CreateTmp(string name, Transform parent, float size, FontStyles style)
+    private static TMP_Text CreateText(string name, Transform parent, float size, FontStyles style)
     {
-        var go = new GameObject(name, typeof(RectTransform));
-        go.transform.SetParent(parent, false);
-        var text = go.AddComponent<TextMeshProUGUI>();
+        var text = Create<TextMeshProUGUI>(name, parent);
         text.fontSize = size;
         text.fontStyle = style;
         text.color = Color.white;
-        text.text = string.Empty;
         return text;
+    }
+
+    private static void Stretch(RectTransform rt)
+    {
+        rt.anchorMin = Vector2.zero;
+        rt.anchorMax = Vector2.one;
+        rt.offsetMin = Vector2.zero;
+        rt.offsetMax = Vector2.zero;
     }
 }
